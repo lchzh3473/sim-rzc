@@ -98,16 +98,16 @@ const audio = {
 	}
 };
 const res = [
-	// ['/chart/PastelLines.RekuMochizuki.0/Music.ogg', './Chart_IN (2).json'],
-	['/chart/PastelLines.RekuMochizuki.0/Music.ogg', '/chart/PastelLines.RekuMochizuki.0/Chart_IN.json'], //初始谱面
-	['/chart/Bamboo.rissyuu.0/Music.ogg', '/chart/Bamboo.rissyuu.0/Chart_IN.json'], //BpmShifts长度大于1
-	['/chart/RIP.eicateve.0/Music.ogg', '/chart/RIP.eicateve.0/Chart_IN.json'], //最大谱面
-	['/chart/TheNextArcady.SEPHID.0/Music.ogg', '/chart/TheNextArcady.SEPHID.0/Chart_IN.json'], //包含透明渐变背景、CameraMove包含xPositionKeyPoints
-	['/chart/OnAndOn.ETIA.0/Music.ogg', '/chart/OnAndOn.ETIA.0/Chart_IN.json'], //BpmShifts为空数组
-	['/chart/Vrtuaresort.seatrus.0/Music.ogg', '/chart/Vrtuaresort.seatrus.0/Chart_IN.json'], //CameraMove包含xPositionKeyPoints
-	['/chart/LavenderLeaffeatLexi.VauBoy.0/Music.ogg', '/chart/LavenderLeaffeatLexi.VauBoy.0/Chart_IN.json'],
-	['/chart/SakuraFubuki.Street.0/Music.ogg', '/chart/SakuraFubuki.Street.0/Chart_IN.json'],
-	['/export/restrictedaccess.knighthood.0.ogg', '/export/Chart_IN.json']
+	// ['../chart/PastelLines.RekuMochizuki.0/Music.ogg', './Chart_IN (2).json'],
+	['../chart/PastelLines.RekuMochizuki.0/Music.ogg', '../chart/PastelLines.RekuMochizuki.0/Chart_IN.json'], //初始谱面
+	['../chart/Bamboo.rissyuu.0/Music.ogg', '../chart/Bamboo.rissyuu.0/Chart_IN.json'], //BpmShifts长度大于1
+	['../chart/RIP.eicateve.0/Music.ogg', '../chart/RIP.eicateve.0/Chart_IN.json'], //最大谱面
+	['../chart/TheNextArcady.SEPHID.0/Music.ogg', '../chart/TheNextArcady.SEPHID.0/Chart_IN.json'], //包含透明渐变背景、CameraMove包含xPositionKeyPoints
+	['../chart/OnAndOn.ETIA.0/Music.ogg', '../chart/OnAndOn.ETIA.0/Chart_IN.json'], //BpmShifts为空数组
+	['../chart/Vrtuaresort.seatrus.0/Music.ogg', '../chart/Vrtuaresort.seatrus.0/Chart_IN.json'], //CameraMove包含xPositionKeyPoints
+	['../chart/LavenderLeaffeatLexi.VauBoy.0/Music.ogg', '../chart/LavenderLeaffeatLexi.VauBoy.0/Chart_IN.json'],
+	['../chart/SakuraFubuki.Street.0/Music.ogg', '../chart/SakuraFubuki.Street.0/Chart_IN.json'],
+	['../export/restrictedaccess.knighthood.0.ogg', '../export/Chart_IN.json']
 ][location.search.match(/chart=(\d+)/) ? location.search.match(/chart=(\d+)/)[1] : 0];
 const linePoints = [];
 let speed = 6.71875 + 3.5;
