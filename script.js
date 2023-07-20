@@ -322,8 +322,8 @@ async function main() {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       //Copyright
-      ctx.strokeText('Rizline Simulator v0.1', centerX, centerY - hlen * 0.03);
-      ctx.fillText('Rizline Simulator v0.1', centerX, centerY - hlen * 0.03);
+      ctx.strokeText('Rizline Simulator v0.1.1', centerX, centerY - hlen * 0.03);
+      ctx.fillText('Rizline Simulator v0.1.1', centerX, centerY - hlen * 0.03);
       ctx.strokeText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.fillText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.strokeText('Code by lchzh3473', centerX, centerY);
@@ -397,23 +397,6 @@ async function main() {
       ctx.fillStyle = chart.isInChallenge ? challengeBgColor : normalBgColor;
       ctx.fillRect(0, ringY, canvas.width, canvas.height - ringY);
       for (const i of chart.lines) {
-        const x = centerX + i.currentX * scale * wlen;
-        //画圈
-        if (i.currentJudgeRingColor && nowRealTime >= i.startRealTime && nowRealTime <= i.endRealTime) {
-          ctx.strokeStyle = rgba2Str(i.currentJudgeRingColor);
-          ctx.lineWidth = noteScale * 10 * scale;
-          ctx.beginPath();
-          ctx.arc(x, ringY, noteScale * 53 * scale, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        //标记线id
-        if (nowRealTime >= i.startRealTime && nowRealTime <= i.endRealTime) {
-          ctx.fillStyle = 'black';
-          ctx.font = hlen * 0.02 + 'px Arial';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(i.id, x, ringY + noteScale * 100 + i.id % 9 * hlen * 0.02);
-        }
         //绘制note
         for (const j of i.notes) {
           const realDelta = j.realTime - nowRealTime;
@@ -479,6 +462,25 @@ async function main() {
           // ctx.textAlign = 'center';
           // ctx.textBaseline = 'middle';
           // ctx.fillText(i.id + '.' + j.id, x, y);
+        }
+      }
+      for (const i of chart.lines) {
+        const x = centerX + i.currentX * scale * wlen;
+        //画圈
+        if (i.currentJudgeRingColor && nowRealTime >= i.startRealTime && nowRealTime <= i.endRealTime) {
+          ctx.strokeStyle = rgba2Str(i.currentJudgeRingColor);
+          ctx.lineWidth = noteScale * 10 * scale;
+          ctx.beginPath();
+          ctx.arc(x, ringY, noteScale * 53 * scale, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        //标记线id
+        if (nowRealTime >= i.startRealTime && nowRealTime <= i.endRealTime) {
+          ctx.fillStyle = 'black';
+          ctx.font = hlen * 0.02 + 'px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(i.id, x, ringY + noteScale * 100 + i.id % 9 * hlen * 0.02);
         }
       }
       // ctx.strokeStyle = 'red';
