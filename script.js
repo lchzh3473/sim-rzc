@@ -1,21 +1,22 @@
 const tween = [
   t => t, //0
-  t => 1 - Math.cos(t * Math.PI / 2), //1
-  t => Math.sin(t * Math.PI / 2), //2
+  t => 1 - Math.cos((t * Math.PI) / 2), //1
+  t => Math.sin((t * Math.PI) / 2), //2
   t => (1 - Math.cos(t * Math.PI)) / 2, //3
   t => t ** 2, //4
   t => 1 - (t - 1) ** 2, //5
   t => ((t *= 2) < 1 ? t ** 2 : -((t - 2) ** 2 - 2)) / 2, //6
   t => t ** 3, //7
   t => 1 + (t - 1) ** 3, //8
-  t => ((t *= 2) < 1 ? t ** 3 : ((t - 2) ** 3 + 2)) / 2, //9
+  t => ((t *= 2) < 1 ? t ** 3 : (t - 2) ** 3 + 2) / 2, //9
   t => t ** 4, //10
   t => 1 - (t - 1) ** 4, //11
   t => ((t *= 2) < 1 ? t ** 4 : -((t - 2) ** 4 - 2)) / 2, //12
   () => 0, //13
-  () => 1, //14
+  () => 1 //14
   // t => t //15, should be Animation Curve
 ];
+/* prettier-ignore */
 const tweenB = [
   null,
   [0.361974, 0.000000, 0.674135, 0.488132],
@@ -60,15 +61,15 @@ const audio = {
   /**
    * @typedef {Object} AudioParamOptions
    * @property {boolean} [loop=false]
-   * @property {boolean} [isOut=true] 
-   * @property {number} [offset=0] 
-   * @property {number} [playbackrate=1] 
-   * @property {number} [gainrate=1] 
-   * 
+   * @property {boolean} [isOut=true]
+   * @property {number} [offset=0]
+   * @property {number} [playbackrate=1]
+   * @property {number} [gainrate=1]
+   *
    * @param {AudioBuffer} res
-   * @param {AudioParamOptions} options 
+   * @param {AudioParamOptions} options
    */
-  play(res, {
+  play(res, /*prettier-ignore*/ {
     loop = false,
     isOut = true,
     offset = 0,
@@ -99,16 +100,18 @@ const audio = {
   }
 };
 const res = [
-  // ['../chart/PastelLines.RekuMochizuki.0/Music.ogg', './Chart_IN (2).json'],
-  ['../chart/PastelLines.RekuMochizuki.0/Music.ogg', '../chart/PastelLines.RekuMochizuki.0/Chart_IN.json'], //初始谱面
-  ['../chart/Bamboo.rissyuu.0/Music.ogg', '../chart/Bamboo.rissyuu.0/Chart_IN.json'], //BpmShifts长度大于1
-  ['../chart/RIP.eicateve.0/Music.ogg', '../chart/RIP.eicateve.0/Chart_IN.json'], //最大谱面
-  ['../chart/TheNextArcady.SEPHID.0/Music.ogg', '../chart/TheNextArcady.SEPHID.0/Chart_IN.json'], //包含透明渐变背景、CameraMove包含xPositionKeyPoints
-  ['../chart/OnAndOn.ETIA.0/Music.ogg', '../chart/OnAndOn.ETIA.0/Chart_IN.json'], //BpmShifts为空数组
-  ['../chart/Vrtuaresort.seatrus.0/Music.ogg', '../chart/Vrtuaresort.seatrus.0/Chart_IN.json'], //CameraMove包含xPositionKeyPoints
-  ['../chart/LavenderLeaffeatLexi.VauBoy.0/Music.ogg', '../chart/LavenderLeaffeatLexi.VauBoy.0/Chart_IN.json'],
-  ['../chart/SakuraFubuki.Street.0/Music.ogg', '../chart/SakuraFubuki.Street.0/Chart_IN.json'],
-  ['../export/restrictedaccess.knighthood.0.ogg', '../export/Chart_IN.json']
+  // ['../assets/PastelLines.RekuMochizuki.0/music.ogg', './Chart_IN (2).json'],
+  ['../assets/PastelLines.RekuMochizuki.0/music.ogg', '../assets/PastelLines.RekuMochizuki.0/Chart_IN.json'], //初始谱面
+  ['../assets/Bamboo.rissyuu.0/music.ogg', '../assets/Bamboo.rissyuu.0/Chart_IN.json'], //BpmShifts长度大于1
+  ['../assets/RIP.eicateve.0/music.ogg', '../assets/RIP.eicateve.0/Chart_IN.json'], //最大谱面
+  ['../assets/TheNextArcady.SEPHID.0/music.ogg', '../assets/TheNextArcady.SEPHID.0/Chart_IN.json'], //包含透明渐变背景、CameraMove包含xPositionKeyPoints
+  ['../assets/OnAndOn.ETIA.0/music.ogg', '../assets/OnAndOn.ETIA.0/Chart_IN.json'], //BpmShifts为空数组
+  ['../assets/Vrtuaresort.seatrus.0/music.ogg', '../assets/Vrtuaresort.seatrus.0/Chart_IN.json'], //CameraMove包含xPositionKeyPoints
+  ['../assets/LavenderLeaffeatLexi.VauBoy.0/music.ogg', '../assets/LavenderLeaffeatLexi.VauBoy.0/Chart_IN.json'],
+  ['../assets/SakuraFubuki.Street.0/music.ogg', '../assets/SakuraFubuki.Street.0/Chart_IN.json'],
+  ['../assets/RestrictedAccess.Knighthood.0/music.ogg', '../assets/RestrictedAccess.Knighthood.0/Chart_IN.json'],
+  ['../assets/Antler.Juggernaut.0/music.ogg', '../assets/Antler.Juggernaut.0/Chart_IN.json'],
+  ['../assets/Grimheart.Puru.0/music.ogg', '../assets/Grimheart.Puru.0/Chart_IN.json']
 ][location.search.match(/chart=(\d+)/) ? location.search.match(/chart=(\d+)/)[1] : 0];
 const linePoints = [];
 let speed = 6.71875 + 3.5;
@@ -138,13 +141,13 @@ async function main() {
     canvas.style.cssText += `;width:${stage.clientWidth}px;height:${stage.clientHeight}px`;
     canvas.width = stage.clientWidth * devicePixelRatio;
     canvas.height = stage.clientHeight * devicePixelRatio;
-    ringY = canvas.width / canvas.height > 9 / 16 ? canvas.height * 0.74 : canvas.width * 0.74 * 16 / 9 + (canvas.height - canvas.width * 16 / 9) / 2;
+    ringY = canvas.width / canvas.height > 9 / 16 ? canvas.height * 0.74 : (canvas.width * 0.74 * 16) / 9 + (canvas.height - (canvas.width * 16) / 9) / 2;
     noteScale = canvas.width / canvas.height > 3 / 4 ? canvas.height / 1440 : canvas.width / 1080;
     centerX = canvas.width / 2;
     centerY = canvas.height / 2;
-    wlen = canvas.width / canvas.height > 3 / 4 ? canvas.height * 3 / 4 : canvas.width;
-    hlen = canvas.width / canvas.height > 9 / 16 ? canvas.height : canvas.width * 16 / 9;
-    hhl = 72.7311 * (canvas.width / canvas.height > 9 / 16 ? 1 : canvas.width / canvas.height / 9 * 16) * devicePixelRatio;
+    wlen = canvas.width / canvas.height > 3 / 4 ? (canvas.height * 3) / 4 : canvas.width;
+    hlen = canvas.width / canvas.height > 9 / 16 ? canvas.height : (canvas.width * 16) / 9;
+    hhl = 72.7311 * (canvas.width / canvas.height > 9 / 16 ? 1 : (canvas.width / canvas.height / 9) * 16) * devicePixelRatio;
   }
 
   function prepChart() {
@@ -157,17 +160,18 @@ async function main() {
       for (const i of bpmShifts) {
         if (time > i.endTime) continue;
         if (time < i.startTime) break;
-        result = i.floorPosition + (time - i.startTime) / i.startValue / chart.bPM * 60;
+        result = i.floorPosition + ((time - i.startTime) / i.startValue / chart.bPM) * 60;
       }
       return result * 1e3;
-    }
+    };
     for (const i of bpmShifts) {
       i.startRealTime = getTime(i.startTime);
       i.endRealTime = getTime(i.endTime);
       if (i.easeType !== 0) console.error('EaseType is not 0:', i.easeType);
       else delete i.easeType;
     }
-    for (const i of chart.themes) {}
+    for (const i of chart.themes) {
+    }
     for (const i of chart.challengeTimes) {
       i.startRealTime = getTime(i.start);
       i.endRealTime = getTime(i.end);
@@ -236,7 +240,7 @@ async function main() {
         delete v.color;
       }
     }
-    chart.lines.forEach((v, i) => v.id = i);
+    chart.lines.forEach((v, i) => (v.id = i));
     for (const i of chart.lines) {
       i.startRealTime = getTime(i.linePoints[0].time);
       i.endRealTime = getTime(i.linePoints[i.linePoints.length - 1].time);
@@ -249,7 +253,7 @@ async function main() {
         j.endCanvas = chart.canvasMoves[j.endCanvasIndex];
         linePoints.push(j);
       }
-      i.notes.forEach((v, i) => v.id = i);
+      i.notes.forEach((v, i) => (v.id = i));
       for (const j of i.notes) {
         j.realTime = getTime(j.time);
         if (j.realTime < i.startRealTime || i.endRealTime < j.realTime) console.error('Note is out of line:', j);
@@ -300,13 +304,14 @@ async function main() {
           console.debug(j.type === 0 ? 'Tap' : j.type === 1 ? 'Drag' : 'Hold', /* i.id + '.' + j.id ,*/ 'at', Math.round(j.realTime), 'ms');
         }, j.realTime);
       }
-    };
+    }
     const now = performance.now();
     const normalBgColor = rgba2Str(chart.themes[0].colorsList[0]);
     const normalNoteColor = rgba2Str(chart.themes[0].colorsList[1]);
     const challengeBgColor = rgba2Str(chart.themes[1].colorsList[0]);
     const challengeNoteColor = rgba2Str(chart.themes[1].colorsList[1]);
     const ctx = canvas.getContext('2d');
+    ctx.lineCap = 'round';
     loop();
 
     function loop() {
@@ -322,8 +327,8 @@ async function main() {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       //Copyright
-      ctx.strokeText('Rizline Simulator v0.1.1', centerX, centerY - hlen * 0.03);
-      ctx.fillText('Rizline Simulator v0.1.1', centerX, centerY - hlen * 0.03);
+      ctx.strokeText('Rizline Simulator v0.1.2', centerX, centerY - hlen * 0.03);
+      ctx.fillText('Rizline Simulator v0.1.2', centerX, centerY - hlen * 0.03);
       ctx.strokeText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.fillText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.strokeText('Code by lchzh3473', centerX, centerY);
@@ -374,7 +379,7 @@ async function main() {
           ctx.lineTo(cx2, cy2);
         }
         if (!isNaN(cy1) && !isNaN(cy2)) {
-          if (cx1 === cx2 && cy1 === cy2 || j.currentStartColor === j.currentEndColor) ctx.strokeStyle = j.currentStartColor;
+          if ((cx1 === cx2 && cy1 === cy2) || j.currentStartColor === j.currentEndColor) ctx.strokeStyle = j.currentStartColor;
           else {
             const gradient = ctx.createLinearGradient(cx1, cy1, cx2, cy2);
             gradient.addColorStop(0, j.currentStartColor);
@@ -480,7 +485,7 @@ async function main() {
           ctx.font = hlen * 0.02 + 'px Arial';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText(i.id, x, ringY + noteScale * 100 + i.id % 9 * hlen * 0.02);
+          ctx.fillText(i.id, x, ringY + noteScale * 100 + (i.id % 9) * hlen * 0.02);
         }
       }
       // ctx.strokeStyle = 'red';
@@ -531,12 +536,12 @@ async function main() {
           if (nowRealTime > j.endRealTime) continue;
           if (nowRealTime < j.startRealTime) break;
           const delta = tween[j.easeType]((nowRealTime - j.startRealTime) / (j.endRealTime - j.startRealTime));
-          i.currentX = (j.startValue + (j.endValue - j.startValue) * delta) - chart.cameraMove.currentX;
+          i.currentX = j.startValue + (j.endValue - j.startValue) * delta - chart.cameraMove.currentX;
         }
         for (const j of i.speedKeyPoints) {
           if (nowRealTime > j.endRealTime) continue;
           if (nowRealTime < j.startRealTime) break;
-          i.currentY = j.floorPosition + (nowRealTime - j.startRealTime) * j.startValue / 1e3;
+          i.currentY = j.floorPosition + ((nowRealTime - j.startRealTime) * j.startValue) / 1e3;
         }
       }
       for (const i of chart.lines) {
@@ -589,11 +594,11 @@ async function main() {
         }
       }
     }
-  }
+  };
 }
 
 function rgba2Str({ r, g, b, a }) {
-  return `rgba(${r},${g},${b},${a/255})`;
+  return `rgba(${r},${g},${b},${a / 255})`;
 }
 
 function mixColor({ r: r1, g: g1, b: b1, a: a1 }, { r: r2, g: g2, b: b2, a: a2 }) {
@@ -618,7 +623,7 @@ function getCurrentColor(colorPoints, nowRealTime) {
       r: j.startColor.r + (j.endColor.r - j.startColor.r) * delta,
       g: j.startColor.g + (j.endColor.g - j.startColor.g) * delta,
       b: j.startColor.b + (j.endColor.b - j.startColor.b) * delta,
-      a: j.startColor.a + (j.endColor.a - j.startColor.a) * delta,
+      a: j.startColor.a + (j.endColor.a - j.startColor.a) * delta
     };
     break;
   }
