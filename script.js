@@ -111,7 +111,7 @@ const res = [
   ['../assets/SakuraFubuki.Street.0/music.ogg', '../assets/SakuraFubuki.Street.0/Chart_IN.json'],
   ['../assets/RestrictedAccess.Knighthood.0/music.ogg', '../assets/RestrictedAccess.Knighthood.0/Chart_IN.json'],
   ['../assets/Antler.Juggernaut.0/music.ogg', '../assets/Antler.Juggernaut.0/Chart_IN.json'],
-  ['../assets/Grimheart.Puru.0/music.ogg', '../assets/Grimheart.Puru.0/Chart_IN.json']
+  ['../assets/slichertz.Sobrem.0/music.ogg', '../assets/slichertz.Sobrem.0/Chart_IN.json']
 ][location.search.match(/chart=(\d+)/) ? location.search.match(/chart=(\d+)/)[1] : 0];
 const linePoints = [];
 let speed = 6.71875 + 3.5;
