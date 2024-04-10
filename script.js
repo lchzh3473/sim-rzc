@@ -128,6 +128,18 @@ let centerY = 0;
 let wlen = 0;
 let hlen = 0;
 async function main() {
+  const stage = document.getElementById('stage');
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  stage.appendChild(canvas);
+  window.addEventListener('resize', resize);
+  resize();
+  let errored = false;
+  document.body.onunhandledrejection = () => (errored = true);
+  stage.onclick = () => {
+    if (errored) window.alert('资源不合法，请检查');
+    else window.alert('资源加载中，请稍候');
+  };
   audio.init();
   const bgm = await audio.decode(await (await fetch(res[0])).arrayBuffer());
   const hit1 = await audio.decode(await (await fetch('res/rizline_level_tap_1.ogg')).arrayBuffer());
@@ -136,12 +148,6 @@ async function main() {
   console.log(chart);
   self.chart = chart;
   prepChart();
-  const stage = document.getElementById('stage');
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  stage.appendChild(canvas);
-  window.addEventListener('resize', resize);
-  resize();
 
   function resize() {
     canvas.style.cssText += `;width:${stage.clientWidth}px;height:${stage.clientHeight}px`;
