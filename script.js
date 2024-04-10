@@ -99,22 +99,27 @@ const audio = {
     return this._actx;
   }
 };
-const res = [
-  // ['../assets/PastelLines.RekuMochizuki.0/music.ogg', './Chart_IN (2).json'],
-  ['../assets/PastelLines.RekuMochizuki.0/music.ogg', '../assets/PastelLines.RekuMochizuki.0/Chart_IN.json'], //初始谱面
-  ['../assets/Bamboo.rissyuu.0/music.ogg', '../assets/Bamboo.rissyuu.0/Chart_IN.json'], //BpmShifts长度大于1
-  ['../assets/RIP.eicateve.0/music.ogg', '../assets/RIP.eicateve.0/Chart_IN.json'], //最大谱面
-  ['../assets/TheNextArcady.SEPHID.0/music.ogg', '../assets/TheNextArcady.SEPHID.0/Chart_IN.json'], //包含透明渐变背景、CameraMove包含xPositionKeyPoints
-  ['../assets/OnAndOn.ETIA.0/music.ogg', '../assets/OnAndOn.ETIA.0/Chart_IN.json'], //BpmShifts为空数组
-  ['../assets/Vrtuaresort.seatrus.0/music.ogg', '../assets/Vrtuaresort.seatrus.0/Chart_IN.json'], //CameraMove包含xPositionKeyPoints
-  ['../assets/LavenderLeaffeatLexi.VauBoy.0/music.ogg', '../assets/LavenderLeaffeatLexi.VauBoy.0/Chart_IN.json'],
-  ['../assets/SakuraFubuki.Street.0/music.ogg', '../assets/SakuraFubuki.Street.0/Chart_IN.json'],
-  ['../assets/RestrictedAccess.Knighthood.0/music.ogg', '../assets/RestrictedAccess.Knighthood.0/Chart_IN.json'],
-  ['../assets/Antler.Juggernaut.0/music.ogg', '../assets/Antler.Juggernaut.0/Chart_IN.json'],
-  ['../assets/slichertz.Sobrem.0/music.ogg', '../assets/slichertz.Sobrem.0/Chart_IN.json']
-][location.search.match(/chart=(\d+)/) ? location.search.match(/chart=(\d+)/)[1] : 0];
+const presets = [
+  { chart: 'PastelLines.RekuMochizuki.0', level: 'IN' }, // 初始谱面
+  { chart: 'Bamboo.rissyuu.0', level: 'IN' }, // BpmShifts长度大于1
+  { chart: 'RIP.eicateve.0', level: 'IN' }, // 最大谱面
+  { chart: 'TheNextArcady.SEPHID.0', level: 'IN' }, // 包含透明渐变背景、CameraMove包含xPositionKeyPoints
+  { chart: 'OnAndOn.ETIA.0', level: 'IN' }, // BpmShifts为空数组
+  { chart: 'Vrtuaresort.seatrus.0', level: 'IN' }, // CameraMove包含xPositionKeyPoints
+  { chart: 'LavenderLeaffeatLexi.VauBoy.0', level: 'IN' },
+  { chart: 'SakuraFubuki.Street.0', level: 'IN' },
+  { chart: 'RestrictedAccess.Knighthood.0', level: 'IN' },
+  { chart: 'Antler.Juggernaut.0', level: 'IN' },
+  { chart: 'slichertz.Sobrem.0', level: 'IN' } // 包含负y值音符
+];
+const params = new URLSearchParams(location.search);
+const selectedChart = params.get('chart'); // 如果chart输入数字，就用预设
+const selectedSpeed = params.get('speed') || '3.5';
+const selectedLevel = params.get('level') || 'IN';
+const info = presets[+selectedChart] || { chart: selectedChart, level: selectedLevel };
+const res = [`../assets/${info.chart}/music.ogg`, `../assets/${info.chart}/Chart_${info.level}.json`];
 const linePoints = [];
-let speed = 6.71875 + 3.5;
+let speed = 6.71875 + +selectedSpeed;
 let hhl = 0;
 let ringY = 0;
 let noteScale = 0;
@@ -133,6 +138,7 @@ async function main() {
   prepChart();
   const stage = document.getElementById('stage');
   const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
   stage.appendChild(canvas);
   window.addEventListener('resize', resize);
   resize();
@@ -141,6 +147,7 @@ async function main() {
     canvas.style.cssText += `;width:${stage.clientWidth}px;height:${stage.clientHeight}px`;
     canvas.width = stage.clientWidth * devicePixelRatio;
     canvas.height = stage.clientHeight * devicePixelRatio;
+    ctx.lineCap = 'round';
     ringY = canvas.width / canvas.height > 9 / 16 ? canvas.height * 0.74 : (canvas.width * 0.74 * 16) / 9 + (canvas.height - (canvas.width * 16) / 9) / 2;
     noteScale = canvas.width / canvas.height > 3 / 4 ? canvas.height / 1440 : canvas.width / 1080;
     centerX = canvas.width / 2;
@@ -307,11 +314,13 @@ async function main() {
     }
     const now = performance.now();
     const normalBgColor = rgba2Str(chart.themes[0].colorsList[0]);
+    const normalBgColor0 = rgba2Str({ ...chart.themes[0].colorsList[0], a: 0 });
+    const normalBgColor1 = rgba2Str({ ...chart.themes[0].colorsList[0], a: 0.5 });
     const normalNoteColor = rgba2Str(chart.themes[0].colorsList[1]);
     const challengeBgColor = rgba2Str(chart.themes[1].colorsList[0]);
+    const challengeBgColor0 = rgba2Str({ ...chart.themes[1].colorsList[0], a: 0 });
+    const challengeBgColor1 = rgba2Str({ ...chart.themes[1].colorsList[0], a: 0.5 });
     const challengeNoteColor = rgba2Str(chart.themes[1].colorsList[1]);
-    const ctx = canvas.getContext('2d');
-    ctx.lineCap = 'round';
     loop();
 
     function loop() {
@@ -327,8 +336,8 @@ async function main() {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       //Copyright
-      ctx.strokeText('Rizline Simulator v0.1.2', centerX, centerY - hlen * 0.03);
-      ctx.fillText('Rizline Simulator v0.1.2', centerX, centerY - hlen * 0.03);
+      ctx.strokeText('Rizline Simulator v0.1.3', centerX, centerY - hlen * 0.03);
+      ctx.fillText('Rizline Simulator v0.1.3', centerX, centerY - hlen * 0.03);
       ctx.strokeText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.fillText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.strokeText('Code by lchzh3473', centerX, centerY);
@@ -398,9 +407,23 @@ async function main() {
         // ctx.fillText(j.lineId, cx1, cy1);
         // ctx.fillText(j.startCanvasIndex, cx1, cy1 + hlen * 0.02);
       }
-      //遮住ringY以下的部分
-      ctx.fillStyle = chart.isInChallenge ? challengeBgColor : normalBgColor;
-      ctx.fillRect(0, ringY, canvas.width, canvas.height - ringY);
+      // line遮罩
+      {
+        // const gradient = ctx.createLinearGradient(0, centerY + hlen / 2 - hlen * (404 / 1920), 0, centerY + hlen / 2 - hlen * (596 / 1920));
+        // gradient.addColorStop(0 / 192, chart.isInChallenge ? challengeBgColor : normalBgColor);
+        // gradient.addColorStop(128 / 192, chart.isInChallenge ? challengeBgColor1 : normalBgColor1);
+        // gradient.addColorStop(192 / 192, chart.isInChallenge ? challengeBgColor0 : normalBgColor0);
+        const gradient = ctx.createLinearGradient(0, centerY - hlen / 2, 0, centerY + hlen / 2);
+        // gradient.addColorStop(174 / 1920, chart.isInChallenge ? challengeBgColor : normalBgColor);
+        // gradient.addColorStop(302 / 1920, chart.isInChallenge ? challengeBgColor1 : normalBgColor1);
+        // gradient.addColorStop(366 / 1920, chart.isInChallenge ? challengeBgColor0 : normalBgColor0);
+        gradient.addColorStop(1324 / 1920, chart.isInChallenge ? challengeBgColor0 : normalBgColor0);
+        gradient.addColorStop(1388 / 1920, chart.isInChallenge ? challengeBgColor1 : normalBgColor1);
+        gradient.addColorStop(1516 / 1920, chart.isInChallenge ? challengeBgColor : normalBgColor);
+        ctx.fillStyle = gradient;
+        // ctx.fillStyle = chart.isInChallenge ? challengeBgColor : normalBgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
       for (const i of chart.lines) {
         //绘制note
         for (const j of i.notes) {
@@ -430,17 +453,29 @@ async function main() {
             ctx.arc(x, y, noteScale * 22 * scale, 0, Math.PI * 2);
             ctx.fill();
           } else if (j.type === 2) {
-            if (j.holdEndRealTime - nowRealTime < 0) continue;
+            if (j.holdEndRealTime - nowRealTime < -250) continue; // 0.25s
             const x = centerX + j.currentX * scale * wlen;
             const y = ringY - (realDelta < 0 ? 0 : j.currentY * scale * speed * hhl);
-            const dy = ringY - j.currentHoldY * scale * speed * hhl; //todo
             ctx.strokeStyle = 'black';
             ctx.fillStyle = chart.isInChallenge ? challengeNoteColor : normalNoteColor;
             ctx.lineWidth = noteScale * 10 * scale;
+            if (j.holdEndRealTime - nowRealTime < 0) {
+              const progress = 1 - ((nowRealTime - j.holdEndRealTime) / 250) ** 3; //todo
+              ctx.beginPath();
+              ctx.arc(x, y, noteScale * 34 * scale * progress, 0, Math.PI * 2);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(x, y, noteScale * 27 * scale * progress, 0, Math.PI * 2);
+              ctx.fillStyle = 'white';
+              ctx.fill();
+              ctx.stroke();
+              continue;
+            }
             ctx.beginPath();
             ctx.arc(x, y, noteScale * 34 * scale, 0, Math.PI * 2);
             ctx.stroke();
             const holdSize = noteScale * 23 * scale;
+            const dy = ringY - j.currentHoldY * scale * speed * hhl; //todo
             if (y) {
               const gradient = ctx.createLinearGradient(x, y, x, dy);
               gradient.addColorStop(0 / 63, chart.isInChallenge ? challengeNoteColor : normalNoteColor);
@@ -469,6 +504,23 @@ async function main() {
           // ctx.fillText(i.id + '.' + j.id, x, y);
         }
       }
+      // note遮罩
+      {
+        // const gradient = ctx.createLinearGradient(0, centerY + hlen / 2 - hlen * (211 / 1920), 0, centerY + hlen / 2 - hlen * (336 / 1920));
+        // gradient.addColorStop(0 / 192, chart.isInChallenge ? challengeBgColor : normalBgColor);
+        // gradient.addColorStop(128 / 192, chart.isInChallenge ? challengeBgColor1 : normalBgColor1);
+        // gradient.addColorStop(192 / 192, chart.isInChallenge ? challengeBgColor0 : normalBgColor0);
+        const gradient = ctx.createLinearGradient(0, centerY - hlen / 2, 0, centerY + hlen / 2);
+        gradient.addColorStop(174 / 1920, chart.isInChallenge ? challengeBgColor : normalBgColor);
+        gradient.addColorStop(302 / 1920, chart.isInChallenge ? challengeBgColor1 : normalBgColor1);
+        gradient.addColorStop(366 / 1920, chart.isInChallenge ? challengeBgColor0 : normalBgColor0);
+        gradient.addColorStop(1584 / 1920, chart.isInChallenge ? challengeBgColor0 : normalBgColor0);
+        // gradient.addColorStop(302 / 1920, chart.isInChallenge ? challengeBgColor1 : normalBgColor1);
+        gradient.addColorStop(1709 / 1920, chart.isInChallenge ? challengeBgColor : normalBgColor);
+        ctx.fillStyle = gradient;
+        // ctx.fillStyle = chart.isInChallenge ? challengeBgColor : normalBgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
       for (const i of chart.lines) {
         const x = centerX + i.currentX * scale * wlen;
         //画圈
@@ -494,9 +546,9 @@ async function main() {
       //给不在矩形范围的区域加阴影
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
       ctx.fillRect(0, 0, centerX - wlen / 2, canvas.height);
-      ctx.fillRect(centerX + wlen / 2, 0, canvas.width - centerX - wlen / 2, canvas.height);
+      ctx.fillRect(centerX + wlen / 2, 0, centerX - wlen / 2, canvas.height);
       ctx.fillRect(centerX - wlen / 2, 0, wlen, centerY - hlen / 2);
-      ctx.fillRect(centerX - wlen / 2, centerY + hlen / 2, wlen, canvas.height - centerY - hlen / 2);
+      ctx.fillRect(centerX - wlen / 2, centerY + hlen / 2, wlen, centerY - hlen / 2);
       requestAnimationFrame(loop);
     }
 
