@@ -132,7 +132,9 @@ let hlen = 0;
 async function main() {
   const stage = document.getElementById('stage');
   const canvas = document.createElement('canvas');
+  const canvasfg = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
+  const ctxfg = canvasfg.getContext('2d');
   stage.appendChild(canvas);
   window.addEventListener('resize', resize);
   resize();
@@ -153,16 +155,20 @@ async function main() {
 
   function resize() {
     canvas.style.cssText += `;width:${stage.clientWidth}px;height:${stage.clientHeight}px`;
-    canvas.width = stage.clientWidth * devicePixelRatio;
-    canvas.height = stage.clientHeight * devicePixelRatio;
+    const width = stage.clientWidth * devicePixelRatio;
+    const height = stage.clientHeight * devicePixelRatio;
+    canvas.width = width;
+    canvas.height = height;
+    canvasfg.width = width;
+    canvasfg.height = height;
     ctx.lineCap = 'round';
-    ringY = canvas.width / canvas.height > 9 / 16 ? canvas.height * 0.74 : (canvas.width * 0.74 * 16) / 9 + (canvas.height - (canvas.width * 16) / 9) / 2;
-    noteScale = canvas.width / canvas.height > 3 / 4 ? canvas.height / 1440 : canvas.width / 1080;
-    centerX = canvas.width / 2;
-    centerY = canvas.height / 2;
-    wlen = canvas.width / canvas.height > 3 / 4 ? (canvas.height * 3) / 4 : canvas.width;
-    hlen = canvas.width / canvas.height > 9 / 16 ? canvas.height : (canvas.width * 16) / 9;
-    hhl = 72.7311 * (canvas.width / canvas.height > 9 / 16 ? 1 : (canvas.width / canvas.height / 9) * 16) * devicePixelRatio;
+    ringY = width / height > 9 / 16 ? height * 0.74 : (width * 0.74 * 16) / 9 + (height - (width * 16) / 9) / 2;
+    noteScale = width / height > 3 / 4 ? height / 1440 : width / 1080;
+    centerX = width / 2;
+    centerY = height / 2;
+    wlen = width / height > 3 / 4 ? (height * 3) / 4 : width;
+    hlen = width / height > 9 / 16 ? height : (width * 16) / 9;
+    hhl = 72.7311 * (width / height > 9 / 16 ? 1 : (width / height / 9) * 16) * devicePixelRatio;
   }
 
   function prepChart() {
@@ -198,6 +204,8 @@ async function main() {
       i.themeIndex = chart.challengeTimes.indexOf(i) + 1;
       i.startRealTime = getTime(i.start);
       i.endRealTime = getTime(i.end);
+      i.transStartRealTime = i.startRealTime + i.transTime * 1e3;
+      i.transEndRealTime = i.endRealTime + i.transTime * 1e3;
     }
     chart.canvasMoves.forEach((i, index) => {
       if (i.index !== index) throw new Error('CanvasMove index is not correct');
@@ -333,10 +341,6 @@ async function main() {
       }
     }
     const now = performance.now();
-    let bgColor = chart.themes[0].bgColor;
-    let bgColor0 = chart.themes[0].bgColor0;
-    let bgColor1 = chart.themes[0].bgColor1;
-    let noteColor = chart.themes[0].noteColor;
     loop();
 
     function loop() {
@@ -344,6 +348,79 @@ async function main() {
       calcqwq(nowRealTime);
       const scale = chart.cameraMove.currentScale;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawqwq(ctx, nowRealTime, scale, chart.themes[0].bgColor, chart.themes[0].bgColor0, chart.themes[0].bgColor1, chart.themes[0].noteColor);
+      //处理challengeTimes
+      for (const i of chart.challengeTimes) {
+        const theme = chart.themes[i.themeIndex];
+        if (nowRealTime > i.startRealTime && nowRealTime <= i.transStartRealTime) {
+          const transProgress = (nowRealTime - i.startRealTime) / (i.transStartRealTime - i.startRealTime);
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.fillStyle = 'black';
+          ctx.beginPath();
+          ctx.arc(centerX, centerY + hlen / 2, hlen * transProgress * 10, 0, Math.PI * 2);
+          ctx.fill();
+          drawqwq(ctxfg, nowRealTime, scale, theme.bgColor, theme.bgColor0, theme.bgColor1, theme.noteColor);
+          ctx.globalCompositeOperation = 'destination-over';
+          ctx.drawImage(canvasfg, 0, 0);
+          ctx.globalCompositeOperation = 'source-over';
+        }
+        if (nowRealTime > i.transStartRealTime && nowRealTime <= i.endRealTime) {
+          const transProgress = 1;
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.fillStyle = 'black';
+          ctx.beginPath();
+          ctx.arc(centerX, centerY + hlen / 2, hlen * transProgress * 10, 0, Math.PI * 2);
+          ctx.fill();
+          drawqwq(ctxfg, nowRealTime, scale, theme.bgColor, theme.bgColor0, theme.bgColor1, theme.noteColor);
+          ctx.globalCompositeOperation = 'destination-over';
+          ctx.drawImage(canvasfg, 0, 0);
+          ctx.globalCompositeOperation = 'source-over';
+        }
+        if (nowRealTime > i.endRealTime && nowRealTime <= i.transEndRealTime) {
+          const transProgress = (nowRealTime - i.endRealTime) / (i.transEndRealTime - i.endRealTime);
+          ctx.globalCompositeOperation = 'destination-in';
+          ctx.fillStyle = 'black';
+          ctx.beginPath();
+          ctx.arc(centerX, centerY + hlen / 2, hlen * transProgress * 10, 0, Math.PI * 2);
+          ctx.fill();
+          drawqwq(ctxfg, nowRealTime, scale, theme.bgColor, theme.bgColor0, theme.bgColor1, theme.noteColor);
+          ctx.globalCompositeOperation = 'destination-over';
+          ctx.drawImage(canvasfg, 0, 0);
+          ctx.globalCompositeOperation = 'source-over';
+        }
+      }
+      for (const i of chart.lines) {
+        const x = centerX + i.currentX * scale * wlen;
+        //画圈
+        if (i.currentJudgeRingColor && nowRealTime >= i.startRealTime && nowRealTime <= i.endRealTime) {
+          ctx.strokeStyle = rgba2Str(i.currentJudgeRingColor);
+          ctx.lineWidth = noteScale * 10 * scale;
+          ctx.beginPath();
+          ctx.arc(x, ringY, noteScale * 53 * scale, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        //标记线id
+        if (nowRealTime >= i.startRealTime && nowRealTime <= i.endRealTime) {
+          ctx.fillStyle = 'black';
+          ctx.font = hlen * 0.02 + 'px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(i.id, x, ringY + noteScale * 100 + (i.id % 9) * hlen * 0.02);
+        }
+      }
+      // ctx.strokeStyle = 'red';
+      // ctx.lineWidth = 1;
+      // ctx.strokeRect(centerX - wlen / 2, centerY - hlen / 2, wlen, hlen);
+      //给不在矩形范围的区域加阴影
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(0, 0, centerX - wlen / 2, canvas.height);
+      ctx.fillRect(centerX + wlen / 2, 0, centerX - wlen / 2, canvas.height);
+      ctx.fillRect(centerX - wlen / 2, 0, wlen, centerY - hlen / 2);
+      ctx.fillRect(centerX - wlen / 2, centerY + hlen / 2, wlen, centerY - hlen / 2);
+      requestAnimationFrame(loop);
+    }
+
+    function drawqwq(ctx, nowRealTime, scale, bgColor, bgColor0, bgColor1, noteColor) {
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = 'black';
@@ -352,8 +429,8 @@ async function main() {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       //Copyright
-      ctx.strokeText('Rizline Simulator v0.1.4', centerX, centerY - hlen * 0.03);
-      ctx.fillText('Rizline Simulator v0.1.4', centerX, centerY - hlen * 0.03);
+      ctx.strokeText('Rizline Simulator v0.1.5', centerX, centerY - hlen * 0.03);
+      ctx.fillText('Rizline Simulator v0.1.5', centerX, centerY - hlen * 0.03);
       ctx.strokeText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.fillText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.strokeText('Code by lchzh3473', centerX, centerY);
@@ -537,52 +614,9 @@ async function main() {
         // ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
-      for (const i of chart.lines) {
-        const x = centerX + i.currentX * scale * wlen;
-        //画圈
-        if (i.currentJudgeRingColor && nowRealTime >= i.startRealTime && nowRealTime <= i.endRealTime) {
-          ctx.strokeStyle = rgba2Str(i.currentJudgeRingColor);
-          ctx.lineWidth = noteScale * 10 * scale;
-          ctx.beginPath();
-          ctx.arc(x, ringY, noteScale * 53 * scale, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        //标记线id
-        if (nowRealTime >= i.startRealTime && nowRealTime <= i.endRealTime) {
-          ctx.fillStyle = 'black';
-          ctx.font = hlen * 0.02 + 'px Arial';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(i.id, x, ringY + noteScale * 100 + (i.id % 9) * hlen * 0.02);
-        }
-      }
-      // ctx.strokeStyle = 'red';
-      // ctx.lineWidth = 1;
-      // ctx.strokeRect(centerX - wlen / 2, centerY - hlen / 2, wlen, hlen);
-      //给不在矩形范围的区域加阴影
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(0, 0, centerX - wlen / 2, canvas.height);
-      ctx.fillRect(centerX + wlen / 2, 0, centerX - wlen / 2, canvas.height);
-      ctx.fillRect(centerX - wlen / 2, 0, wlen, centerY - hlen / 2);
-      ctx.fillRect(centerX - wlen / 2, centerY + hlen / 2, wlen, centerY - hlen / 2);
-      requestAnimationFrame(loop);
     }
 
     function calcqwq(nowRealTime) {
-      //计算当前时间是否在挑战时间段内
-      let themeIndex = 0;
-      for (const i of chart.challengeTimes) {
-        if (nowRealTime > i.startRealTime && nowRealTime < i.endRealTime) {
-          themeIndex = i.themeIndex;
-          // break;
-        }
-      }
-      chart.themeIndex = themeIndex;
-      bgColor = chart.themes[themeIndex].bgColor;
-      bgColor0 = chart.themes[themeIndex].bgColor0;
-      bgColor1 = chart.themes[themeIndex].bgColor1;
-      noteColor = chart.themes[themeIndex].noteColor;
-      // fxColor = chart.themes[themeIndex].fxColor;
       for (const i of chart.cameraMove.scaleKeyPoints) {
         if (nowRealTime > i.endRealTime) continue;
         if (i.startRealTime === i.endRealTime) {
