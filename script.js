@@ -1,20 +1,20 @@
 const tween = [
-  t => t, //0
-  t => 1 - Math.cos((t * Math.PI) / 2), //1
-  t => Math.sin((t * Math.PI) / 2), //2
-  t => (1 - Math.cos(t * Math.PI)) / 2, //3
-  t => t ** 2, //4
-  t => 1 - (t - 1) ** 2, //5
-  t => ((t *= 2) < 1 ? t ** 2 : -((t - 2) ** 2 - 2)) / 2, //6
-  t => t ** 3, //7
-  t => 1 + (t - 1) ** 3, //8
-  t => ((t *= 2) < 1 ? t ** 3 : (t - 2) ** 3 + 2) / 2, //9
-  t => t ** 4, //10
-  t => 1 - (t - 1) ** 4, //11
-  t => ((t *= 2) < 1 ? t ** 4 : -((t - 2) ** 4 - 2)) / 2, //12
-  () => 0, //13
-  () => 1 //14
-  // t => t //15, should be Animation Curve
+  t => t, // 0
+  t => 1 - Math.cos((t * Math.PI) / 2), // 1
+  t => Math.sin((t * Math.PI) / 2), // 2
+  t => (1 - Math.cos(t * Math.PI)) / 2, // 3
+  t => t ** 2, // 4
+  t => 1 - (t - 1) ** 2, // 5
+  t => ((t *= 2) < 1 ? t ** 2 : -((t - 2) ** 2 - 2)) / 2, // 6
+  t => t ** 3, // 7
+  t => 1 + (t - 1) ** 3, // 8
+  t => ((t *= 2) < 1 ? t ** 3 : (t - 2) ** 3 + 2) / 2, // 9
+  t => t ** 4, // 10
+  t => 1 - (t - 1) ** 4, // 11
+  t => ((t *= 2) < 1 ? t ** 4 : -((t - 2) ** 4 - 2)) / 2, // 12
+  () => 0, // 13
+  () => 1 // 14
+  // t => t // 15, should be Animation Curve
 ];
 /* prettier-ignore */
 const tweenB = [
@@ -81,7 +81,7 @@ const audio = {
     const gain = actx.createGain();
     const bufferSource = actx.createBufferSource();
     bufferSource.buffer = res;
-    bufferSource.loop = loop; //循环播放
+    bufferSource.loop = loop; // 循环播放
     bufferSource.connect(gain);
     gain.gain.value = gainrate;
     bufferSource.playbackRate.value = playbackrate;
@@ -257,10 +257,11 @@ async function main() {
         v.endX = i == a.length - 1 ? v.xPosition : a[i + 1].xPosition;
         delete v.xPosition;
       }
+      // // debug
       // if (v.canvasIndex === 0) {
       //   console.log(v.color);
       //   v.color = { r: 255, g: 0, b: 0, a: 255 };
-      // } //debug
+      // }
       if (v.canvasIndex !== undefined) {
         v.startCanvasIndex = v.canvasIndex;
         v.endCanvasIndex = i == a.length - 1 ? v.canvasIndex : a[i + 1].canvasIndex;
@@ -349,7 +350,7 @@ async function main() {
       const scale = chart.cameraMove.currentScale;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawqwq(ctx, nowRealTime, scale, chart.themes[0].bgColor, chart.themes[0].bgColor0, chart.themes[0].bgColor1, chart.themes[0].noteColor);
-      //处理challengeTimes
+      // 处理challengeTimes
       for (const i of chart.challengeTimes) {
         const theme = chart.themes[i.themeIndex];
         if (nowRealTime > i.startRealTime && nowRealTime <= i.transStartRealTime) {
@@ -391,7 +392,7 @@ async function main() {
       }
       for (const i of chart.lines) {
         const x = centerX + i.currentX * scale * wlen;
-        //画圈
+        // 画圈
         if (i.currentJudgeRingColor && nowRealTime >= i.startRealTime && nowRealTime <= i.endRealTime) {
           ctx.strokeStyle = rgba2Str(i.currentJudgeRingColor);
           ctx.lineWidth = noteScale * 10 * scale;
@@ -399,7 +400,7 @@ async function main() {
           ctx.arc(x, ringY, noteScale * 53 * scale, 0, Math.PI * 2);
           ctx.stroke();
         }
-        //标记线id
+        // 标记线id
         if (nowRealTime >= i.startRealTime && nowRealTime <= i.endRealTime) {
           ctx.fillStyle = 'black';
           ctx.font = hlen * 0.02 + 'px Arial';
@@ -411,7 +412,7 @@ async function main() {
       // ctx.strokeStyle = 'red';
       // ctx.lineWidth = 1;
       // ctx.strokeRect(centerX - wlen / 2, centerY - hlen / 2, wlen, hlen);
-      //给不在矩形范围的区域加阴影
+      // 给不在矩形范围的区域加阴影
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
       ctx.fillRect(0, 0, centerX - wlen / 2, canvas.height);
       ctx.fillRect(centerX + wlen / 2, 0, centerX - wlen / 2, canvas.height);
@@ -428,7 +429,7 @@ async function main() {
       ctx.font = hlen * 0.02 + 'px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      //Copyright
+      // Copyright
       ctx.strokeText('Rizline Simulator v0.1.5', centerX, centerY - hlen * 0.03);
       ctx.fillText('Rizline Simulator v0.1.5', centerX, centerY - hlen * 0.03);
       ctx.strokeText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
@@ -439,7 +440,7 @@ async function main() {
       ctx.fillText('Time: ' + nowRealTime.toFixed(2) + 'ms', centerX, centerY + hlen * 0.03);
       ctx.lineWidth = noteScale * 10;
       for (const j of linePoints) {
-        //linePoints连线
+        // linePoints连线
         const y1 = (j.startY - j.startCanvas.currentY) * scale;
         const y2 = (j.endY - j.endCanvas.currentY) * scale;
         const cy1 = ringY - y1 * speed * hhl;
@@ -462,7 +463,7 @@ async function main() {
           ctx.moveTo(cx2, cy1);
           ctx.lineTo(cx2, cy2);
         } else {
-          //7.9ms(存在bug)
+          // 7.9ms(存在bug)
           // ctx.moveTo(cx1, cy1);
           // const cp = tweenB[easeType];
           // if (!cp) throw new Error('easeType ' + easeType + ' not found');
@@ -471,7 +472,7 @@ async function main() {
           // const cp2x = cx1 + (cx2 - cx1) * cp[3];
           // const cp2y = cy1 + (cy2 - cy1) * cp[2];
           // ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, cx2, cy2);
-          //17.9ms
+          // 17.9ms
           ctx.moveTo(cx1, cy1);
           for (let t = 0; t < 1; t += 0.0625) {
             const tx = cx1 + (cx2 - cx1) * tween[easeType](t);
@@ -492,7 +493,7 @@ async function main() {
           ctx.strokeStyle = j.currentStartColor;
         }
         ctx.stroke();
-        //标记线点id
+        // 标记线点id
         // ctx.fillStyle = 'black';
         // ctx.font = hlen * 0.02 + 'px Arial';
         // ctx.textAlign = 'center';
@@ -518,7 +519,7 @@ async function main() {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
       for (const i of chart.lines) {
-        //绘制note
+        // 绘制note
         for (const j of i.notes) {
           const realDelta = j.realTime - nowRealTime;
           if (j.type === 0) {
@@ -553,7 +554,7 @@ async function main() {
             ctx.fillStyle = noteColor;
             ctx.lineWidth = noteScale * 10 * scale;
             if (j.holdEndRealTime - nowRealTime < 0) {
-              const progress = 1 - ((nowRealTime - j.holdEndRealTime) / 250) ** 3; //todo
+              const progress = 1 - ((nowRealTime - j.holdEndRealTime) / 250) ** 3; // todo
               ctx.beginPath();
               ctx.arc(x, y, noteScale * 34 * scale * progress, 0, Math.PI * 2);
               ctx.stroke();
@@ -568,7 +569,7 @@ async function main() {
             ctx.arc(x, y, noteScale * 34 * scale, 0, Math.PI * 2);
             ctx.stroke();
             const holdSize = noteScale * 23 * scale;
-            const dy = ringY - j.currentHoldY * scale * speed * hhl; //todo
+            const dy = ringY - j.currentHoldY * scale * speed * hhl; // todo
             if (y) {
               const gradient = ctx.createLinearGradient(x, y, x, dy);
               gradient.addColorStop(0 / 63, noteColor);
@@ -589,7 +590,7 @@ async function main() {
             ctx.fill();
             ctx.stroke();
           }
-          //标记note id
+          // 标记note id
           // ctx.fillStyle = 'blue';
           // ctx.font = '30px Arial';
           // ctx.textAlign = 'center';
@@ -637,7 +638,7 @@ async function main() {
         chart.cameraMove.currentX = i.startValue + (i.endValue - i.startValue) * delta;
         break;
       }
-      //计算不同canvas的实时位置
+      // 计算不同canvas的实时位置
       for (const i of chart.canvasMoves) {
         i.currentX = (i.xPositionKeyPoints[0].startValue || 0) - chart.cameraMove.currentX;
         for (const j of i.xPositionKeyPoints) {
@@ -664,7 +665,7 @@ async function main() {
           const delta = tween[j.easeType]((0 - y1) / (y2 - y1));
           i.currentX = x1 + (x2 - x1) * delta;
         }
-        //通过缓动函数计算出note的水平位置
+        // 通过缓动函数计算出note的水平位置
         for (const j of i.notes) {
           const realTime = j.realTime;
           const k = j.linePoint;
