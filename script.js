@@ -109,8 +109,9 @@ const presets = [
   { chart: 'LavenderLeaffeatLexi.VauBoy.0', level: 'IN' },
   { chart: 'SakuraFubuki.Street.0', level: 'IN' },
   { chart: 'RestrictedAccess.Knighthood.0', level: 'IN' },
-  { chart: 'Antler.Juggernaut.0', level: 'IN' },
-  { chart: 'slichertz.Sobrem.0', level: 'IN' } // 包含负y值音符
+  { chart: 'Antler.Juggernaut.0', level: 'IN' }, // lineCap = round 包含点状线条
+  { chart: 'slichertz.Sobrem.0', level: 'IN' }, // 包含负y值音符
+  { chart: 'BRAVEROAD.umavsMorimoriAtsushi.0', level: 'AT' } // AT谱面+多个theme
 ];
 const params = new URLSearchParams(location.search);
 const selectedChart = params.get('chart'); // 如果chart输入数字，就用预设
@@ -118,6 +119,7 @@ const selectedSpeed = params.get('speed') || '3.5';
 const selectedLevel = params.get('level') || 'IN';
 const info = presets[+selectedChart] || { chart: selectedChart, level: selectedLevel };
 const res = [`../assets/${info.chart}/music.ogg`, `../assets/${info.chart}/Chart_${info.level}.json`];
+// const res = [`../plugins/bundle/ラグトレイン.稲葉曇.0/Music.ogg`, `../plugins/bundle/ラグトレイン.稲葉曇.0/Chart_HD_repaired.json`];
 const linePoints = [];
 let speed = 6.71875 + +selectedSpeed;
 let hhl = 0;
@@ -184,8 +186,16 @@ async function main() {
       else delete i.easeType;
     }
     for (const i of chart.themes) {
+      i.bgColor = rgba2Str(i.colorsList[0]);
+      i.bgColor0 = rgba2Str({ ...i.colorsList[0], a: 0 });
+      i.bgColor1 = rgba2Str({ ...i.colorsList[0], a: 127.5 });
+      i.noteColor = rgba2Str(i.colorsList[1]);
+      i.fxColor = rgba2Str(i.colorsList[2]);
+      if (i.colorsList.length > 3) console.error('colorsList length is greater than 3:', i.colorsList);
+      // delete i.colorsList;
     }
     for (const i of chart.challengeTimes) {
+      i.themeIndex = chart.challengeTimes.indexOf(i) + 1;
       i.startRealTime = getTime(i.start);
       i.endRealTime = getTime(i.end);
     }
@@ -239,6 +249,10 @@ async function main() {
         v.endX = i == a.length - 1 ? v.xPosition : a[i + 1].xPosition;
         delete v.xPosition;
       }
+      // if (v.canvasIndex === 0) {
+      //   console.log(v.color);
+      //   v.color = { r: 255, g: 0, b: 0, a: 255 };
+      // } //debug
       if (v.canvasIndex !== undefined) {
         v.startCanvasIndex = v.canvasIndex;
         v.endCanvasIndex = i == a.length - 1 ? v.canvasIndex : a[i + 1].canvasIndex;
@@ -319,14 +333,10 @@ async function main() {
       }
     }
     const now = performance.now();
-    const normalBgColor = rgba2Str(chart.themes[0].colorsList[0]);
-    const normalBgColor0 = rgba2Str({ ...chart.themes[0].colorsList[0], a: 0 });
-    const normalBgColor1 = rgba2Str({ ...chart.themes[0].colorsList[0], a: 0.5 });
-    const normalNoteColor = rgba2Str(chart.themes[0].colorsList[1]);
-    const challengeBgColor = rgba2Str(chart.themes[1].colorsList[0]);
-    const challengeBgColor0 = rgba2Str({ ...chart.themes[1].colorsList[0], a: 0 });
-    const challengeBgColor1 = rgba2Str({ ...chart.themes[1].colorsList[0], a: 0.5 });
-    const challengeNoteColor = rgba2Str(chart.themes[1].colorsList[1]);
+    let bgColor = chart.themes[0].bgColor;
+    let bgColor0 = chart.themes[0].bgColor0;
+    let bgColor1 = chart.themes[0].bgColor1;
+    let noteColor = chart.themes[0].noteColor;
     loop();
 
     function loop() {
@@ -334,7 +344,7 @@ async function main() {
       calcqwq(nowRealTime);
       const scale = chart.cameraMove.currentScale;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = chart.isInChallenge ? challengeBgColor : normalBgColor;
+      ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = 'black';
       ctx.strokeStyle = 'white';
@@ -342,8 +352,8 @@ async function main() {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       //Copyright
-      ctx.strokeText('Rizline Simulator v0.1.3', centerX, centerY - hlen * 0.03);
-      ctx.fillText('Rizline Simulator v0.1.3', centerX, centerY - hlen * 0.03);
+      ctx.strokeText('Rizline Simulator v0.1.4', centerX, centerY - hlen * 0.03);
+      ctx.fillText('Rizline Simulator v0.1.4', centerX, centerY - hlen * 0.03);
       ctx.strokeText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.fillText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.strokeText('Code by lchzh3473', centerX, centerY);
@@ -416,18 +426,18 @@ async function main() {
       // line遮罩
       {
         // const gradient = ctx.createLinearGradient(0, centerY + hlen / 2 - hlen * (404 / 1920), 0, centerY + hlen / 2 - hlen * (596 / 1920));
-        // gradient.addColorStop(0 / 192, chart.isInChallenge ? challengeBgColor : normalBgColor);
-        // gradient.addColorStop(128 / 192, chart.isInChallenge ? challengeBgColor1 : normalBgColor1);
-        // gradient.addColorStop(192 / 192, chart.isInChallenge ? challengeBgColor0 : normalBgColor0);
+        // gradient.addColorStop(0 / 192, bgColor);
+        // gradient.addColorStop(128 / 192, bgColor1);
+        // gradient.addColorStop(192 / 192, bgColor0);
         const gradient = ctx.createLinearGradient(0, centerY - hlen / 2, 0, centerY + hlen / 2);
-        // gradient.addColorStop(174 / 1920, chart.isInChallenge ? challengeBgColor : normalBgColor);
-        // gradient.addColorStop(302 / 1920, chart.isInChallenge ? challengeBgColor1 : normalBgColor1);
-        // gradient.addColorStop(366 / 1920, chart.isInChallenge ? challengeBgColor0 : normalBgColor0);
-        gradient.addColorStop(1324 / 1920, chart.isInChallenge ? challengeBgColor0 : normalBgColor0);
-        gradient.addColorStop(1388 / 1920, chart.isInChallenge ? challengeBgColor1 : normalBgColor1);
-        gradient.addColorStop(1516 / 1920, chart.isInChallenge ? challengeBgColor : normalBgColor);
+        // gradient.addColorStop(174 / 1920, bgColor);
+        // gradient.addColorStop(302 / 1920, bgColor1);
+        // gradient.addColorStop(366 / 1920, bgColor0);
+        gradient.addColorStop(1324 / 1920, bgColor0);
+        gradient.addColorStop(1388 / 1920, bgColor1);
+        gradient.addColorStop(1516 / 1920, bgColor);
         ctx.fillStyle = gradient;
-        // ctx.fillStyle = chart.isInChallenge ? challengeBgColor : normalBgColor;
+        // ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
       for (const i of chart.lines) {
@@ -442,7 +452,7 @@ async function main() {
             ctx.beginPath();
             ctx.arc(x, y, noteScale * 42 * scale, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = chart.isInChallenge ? challengeNoteColor : normalNoteColor;
+            ctx.fillStyle = noteColor;
             ctx.beginPath();
             ctx.arc(x, y, noteScale * 26 * scale, 0, Math.PI * 2);
             ctx.fill();
@@ -463,7 +473,7 @@ async function main() {
             const x = centerX + j.currentX * scale * wlen;
             const y = ringY - (realDelta < 0 ? 0 : j.currentY * scale * speed * hhl);
             ctx.strokeStyle = 'black';
-            ctx.fillStyle = chart.isInChallenge ? challengeNoteColor : normalNoteColor;
+            ctx.fillStyle = noteColor;
             ctx.lineWidth = noteScale * 10 * scale;
             if (j.holdEndRealTime - nowRealTime < 0) {
               const progress = 1 - ((nowRealTime - j.holdEndRealTime) / 250) ** 3; //todo
@@ -484,8 +494,8 @@ async function main() {
             const dy = ringY - j.currentHoldY * scale * speed * hhl; //todo
             if (y) {
               const gradient = ctx.createLinearGradient(x, y, x, dy);
-              gradient.addColorStop(0 / 63, chart.isInChallenge ? challengeNoteColor : normalNoteColor);
-              gradient.addColorStop(36 / 63, chart.isInChallenge ? challengeNoteColor : normalNoteColor);
+              gradient.addColorStop(0 / 63, noteColor);
+              gradient.addColorStop(36 / 63, noteColor);
               gradient.addColorStop(63 / 63, 'rgba(255, 255, 255, 0)');
               ctx.fillStyle = gradient;
             }
@@ -513,18 +523,18 @@ async function main() {
       // note遮罩
       {
         // const gradient = ctx.createLinearGradient(0, centerY + hlen / 2 - hlen * (211 / 1920), 0, centerY + hlen / 2 - hlen * (336 / 1920));
-        // gradient.addColorStop(0 / 192, chart.isInChallenge ? challengeBgColor : normalBgColor);
-        // gradient.addColorStop(128 / 192, chart.isInChallenge ? challengeBgColor1 : normalBgColor1);
-        // gradient.addColorStop(192 / 192, chart.isInChallenge ? challengeBgColor0 : normalBgColor0);
+        // gradient.addColorStop(0 / 192, bgColor);
+        // gradient.addColorStop(128 / 192, bgColor1);
+        // gradient.addColorStop(192 / 192, bgColor0);
         const gradient = ctx.createLinearGradient(0, centerY - hlen / 2, 0, centerY + hlen / 2);
-        gradient.addColorStop(174 / 1920, chart.isInChallenge ? challengeBgColor : normalBgColor);
-        gradient.addColorStop(302 / 1920, chart.isInChallenge ? challengeBgColor1 : normalBgColor1);
-        gradient.addColorStop(366 / 1920, chart.isInChallenge ? challengeBgColor0 : normalBgColor0);
-        gradient.addColorStop(1584 / 1920, chart.isInChallenge ? challengeBgColor0 : normalBgColor0);
-        // gradient.addColorStop(302 / 1920, chart.isInChallenge ? challengeBgColor1 : normalBgColor1);
-        gradient.addColorStop(1709 / 1920, chart.isInChallenge ? challengeBgColor : normalBgColor);
+        gradient.addColorStop(174 / 1920, bgColor);
+        gradient.addColorStop(302 / 1920, bgColor1);
+        gradient.addColorStop(366 / 1920, bgColor0);
+        gradient.addColorStop(1584 / 1920, bgColor0);
+        // gradient.addColorStop(302 / 1920, bgColor1);
+        gradient.addColorStop(1709 / 1920, bgColor);
         ctx.fillStyle = gradient;
-        // ctx.fillStyle = chart.isInChallenge ? challengeBgColor : normalBgColor;
+        // ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
       for (const i of chart.lines) {
@@ -560,13 +570,19 @@ async function main() {
 
     function calcqwq(nowRealTime) {
       //计算当前时间是否在挑战时间段内
-      chart.isInChallenge = false;
+      let themeIndex = 0;
       for (const i of chart.challengeTimes) {
         if (nowRealTime > i.startRealTime && nowRealTime < i.endRealTime) {
-          chart.isInChallenge = true;
-          break;
+          themeIndex = i.themeIndex;
+          // break;
         }
       }
+      chart.themeIndex = themeIndex;
+      bgColor = chart.themes[themeIndex].bgColor;
+      bgColor0 = chart.themes[themeIndex].bgColor0;
+      bgColor1 = chart.themes[themeIndex].bgColor1;
+      noteColor = chart.themes[themeIndex].noteColor;
+      // fxColor = chart.themes[themeIndex].fxColor;
       for (const i of chart.cameraMove.scaleKeyPoints) {
         if (nowRealTime > i.endRealTime) continue;
         if (i.startRealTime === i.endRealTime) {

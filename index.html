@@ -1,34 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <!--viewport-fit=cover:Fill the whole screen on iPhone X-->
+    <meta charset="utf-8" name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+    <title>Document</title>
+    <style>
+      ::-webkit-scrollbar {
+        display: none;
+      }
 
-<head>
-  <!--viewport-fit=cover:Fill the whole screen on iPhone X-->
-  <meta charset="utf-8" name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-  <title>Document</title>
-  <style>
-    ::-webkit-scrollbar {
-      display: none;
-    }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
 
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-    }
+      #stage {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+    </style>
+  </head>
 
-    #stage {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-    }
-  </style>
-</head>
-
-<body onload="main()">
-  <div id="stage"></div>
-  <script src="./script.js?v=0131"></script>
-</body>
-
+  <body onload="main()">
+    <div id="stage"></div>
+    <script src="./script.js?v=0140"></script>
+  </body>
 </html>
