@@ -120,6 +120,7 @@ const selectedLevel = params.get('level') || 'IN';
 const info = presets[+selectedChart] || { chart: selectedChart, level: selectedLevel };
 const res = [`../assets/${info.chart}/music.ogg`, `../assets/${info.chart}/Chart_${info.level}.json`];
 // const res = [`../plugins/bundle/ラグトレイン.稲葉曇.0/Music.ogg`, `../plugins/bundle/ラグトレイン.稲葉曇.0/Chart_HD_repaired.json`];
+// const res = ['../assets/PastelLines.RekuMochizuki.0/music.ogg', '../plugins/bundle/riztime_test/Chart_EZ.json'];
 const linePoints = [];
 let speed = 6.71875 + +selectedSpeed;
 let hhl = 0;
@@ -348,41 +349,32 @@ async function main() {
       const nowRealTime = self.qwq ? self.qwq : performance.now() - now;
       calcqwq(nowRealTime);
       const scale = chart.cameraMove.currentScale;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawqwq(ctx, nowRealTime, scale, chart.themes[0].bgColor, chart.themes[0].bgColor0, chart.themes[0].bgColor1, chart.themes[0].noteColor);
+      // ctx.clearRect(0, 0, canvas.width, canvas.height);
       // 处理challengeTimes
+      if (chart.challengeTimes.every(i => nowRealTime < i.transStartRealTime || nowRealTime > i.endRealTime)) {
+        drawqwq(ctx, nowRealTime, scale, chart.themes[0].bgColor, chart.themes[0].bgColor0, chart.themes[0].bgColor1, chart.themes[0].noteColor);
+      }
       for (const i of chart.challengeTimes) {
         const theme = chart.themes[i.themeIndex];
-        if (nowRealTime > i.startRealTime && nowRealTime <= i.transStartRealTime) {
+        if (nowRealTime > i.endRealTime && nowRealTime <= i.transEndRealTime) {
+          const transProgress = 1 - (nowRealTime - i.endRealTime) / (i.transEndRealTime - i.endRealTime);
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.fillStyle = 'black';
+          ctx.beginPath();
+          ctx.arc(centerX, 0, centerY * 2 * transProgress * 15, 0, Math.PI * 2);
+          ctx.fill();
+          drawqwq(ctxfg, nowRealTime, scale, theme.bgColor, theme.bgColor0, theme.bgColor1, theme.noteColor);
+          ctx.globalCompositeOperation = 'destination-over';
+          ctx.drawImage(canvasfg, 0, 0);
+          ctx.globalCompositeOperation = 'source-over';
+        } else if (nowRealTime > i.transStartRealTime && nowRealTime <= i.endRealTime) {
+          drawqwq(ctx, nowRealTime, scale, theme.bgColor, theme.bgColor0, theme.bgColor1, theme.noteColor);
+        } else if (nowRealTime > i.startRealTime && nowRealTime <= i.transStartRealTime) {
           const transProgress = (nowRealTime - i.startRealTime) / (i.transStartRealTime - i.startRealTime);
           ctx.globalCompositeOperation = 'destination-out';
           ctx.fillStyle = 'black';
           ctx.beginPath();
-          ctx.arc(centerX, centerY + hlen / 2, hlen * transProgress * 10, 0, Math.PI * 2);
-          ctx.fill();
-          drawqwq(ctxfg, nowRealTime, scale, theme.bgColor, theme.bgColor0, theme.bgColor1, theme.noteColor);
-          ctx.globalCompositeOperation = 'destination-over';
-          ctx.drawImage(canvasfg, 0, 0);
-          ctx.globalCompositeOperation = 'source-over';
-        }
-        if (nowRealTime > i.transStartRealTime && nowRealTime <= i.endRealTime) {
-          const transProgress = 1;
-          ctx.globalCompositeOperation = 'destination-out';
-          ctx.fillStyle = 'black';
-          ctx.beginPath();
-          ctx.arc(centerX, centerY + hlen / 2, hlen * transProgress * 10, 0, Math.PI * 2);
-          ctx.fill();
-          drawqwq(ctxfg, nowRealTime, scale, theme.bgColor, theme.bgColor0, theme.bgColor1, theme.noteColor);
-          ctx.globalCompositeOperation = 'destination-over';
-          ctx.drawImage(canvasfg, 0, 0);
-          ctx.globalCompositeOperation = 'source-over';
-        }
-        if (nowRealTime > i.endRealTime && nowRealTime <= i.transEndRealTime) {
-          const transProgress = (nowRealTime - i.endRealTime) / (i.transEndRealTime - i.endRealTime);
-          ctx.globalCompositeOperation = 'destination-in';
-          ctx.fillStyle = 'black';
-          ctx.beginPath();
-          ctx.arc(centerX, centerY + hlen / 2, hlen * transProgress * 10, 0, Math.PI * 2);
+          ctx.arc(centerX, centerY * 2, centerY * 2 * transProgress * 15, 0, Math.PI * 2);
           ctx.fill();
           drawqwq(ctxfg, nowRealTime, scale, theme.bgColor, theme.bgColor0, theme.bgColor1, theme.noteColor);
           ctx.globalCompositeOperation = 'destination-over';
@@ -430,8 +422,8 @@ async function main() {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       // Copyright
-      ctx.strokeText('Rizline Simulator v0.1.5', centerX, centerY - hlen * 0.03);
-      ctx.fillText('Rizline Simulator v0.1.5', centerX, centerY - hlen * 0.03);
+      ctx.strokeText('Rizline Simulator v0.1.6', centerX, centerY - hlen * 0.03);
+      ctx.fillText('Rizline Simulator v0.1.6', centerX, centerY - hlen * 0.03);
       ctx.strokeText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.fillText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.strokeText('Code by lchzh3473', centerX, centerY);
