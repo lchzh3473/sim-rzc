@@ -158,18 +158,19 @@ async function main() {
     canvas.style.cssText += `;width:${stage.clientWidth}px;height:${stage.clientHeight}px`;
     const width = stage.clientWidth * devicePixelRatio;
     const height = stage.clientHeight * devicePixelRatio;
+    const aspect = width / height;
     canvas.width = width;
     canvas.height = height;
     canvasfg.width = width;
     canvasfg.height = height;
     ctx.lineCap = 'round';
-    ringY = width / height > 9 / 16 ? height * 0.74 : (width * 0.74 * 16) / 9 + (height - (width * 16) / 9) / 2;
-    noteScale = width / height > 3 / 4 ? height / 1440 : width / 1080;
+    ringY = aspect > 9 / 16 ? height * 0.74 : (width * 0.74) / (9 / 16) + (height - width / (9 / 16)) / 2;
+    noteScale = aspect > 9 / 16 ? height / 1920 : width / 1080;
     centerX = width / 2;
     centerY = height / 2;
-    wlen = width / height > 3 / 4 ? (height * 3) / 4 : width;
-    hlen = width / height > 9 / 16 ? height : (width * 16) / 9;
-    hhl = 72.7311 * (width / height > 9 / 16 ? 1 : (width / height / 9) * 16) * devicePixelRatio;
+    wlen = aspect > 3 / 4 ? height * (3 / 4) : width;
+    hlen = aspect > 9 / 16 ? height : width / (9 / 16);
+    hhl = 0.0777 * hlen;
   }
 
   function prepChart() {
@@ -422,8 +423,8 @@ async function main() {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       // Copyright
-      ctx.strokeText('Rizline Simulator v0.1.6', centerX, centerY - hlen * 0.03);
-      ctx.fillText('Rizline Simulator v0.1.6', centerX, centerY - hlen * 0.03);
+      ctx.strokeText('Rizline Simulator v0.1.7', centerX, centerY - hlen * 0.03);
+      ctx.fillText('Rizline Simulator v0.1.7', centerX, centerY - hlen * 0.03);
       ctx.strokeText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.fillText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.strokeText('Code by lchzh3473', centerX, centerY);
