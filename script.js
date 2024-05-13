@@ -118,7 +118,7 @@ const selectedChart = params.get('chart'); // 如果chart输入数字，就用�
 const selectedSpeed = params.get('speed') || '3.5';
 const selectedLevel = params.get('level') || 'IN';
 const info = presets[+selectedChart] || { chart: selectedChart, level: selectedLevel };
-const res = [`../assets/${info.chart}/music.ogg`, `../assets/${info.chart}/Chart_${info.level}.json`];
+const res = [`/sim-rzc-assets/${info.chart}/music.ogg`, `/sim-rzc-assets/${info.chart}/Chart_${info.level}.json`];
 // const res = [`../plugins/bundle/ラグトレイン.稲葉曇.0/Music.ogg`, `../plugins/bundle/ラグトレイン.稲葉曇.0/Chart_HD_repaired.json`];
 // const res = ['../assets/PastelLines.RekuMochizuki.0/music.ogg', '../plugins/bundle/riztime_test/Chart_EZ.json'];
 const linePoints = [];
@@ -427,8 +427,8 @@ async function main() {
       ctx.fillText('Rizline Simulator v0.1.7', centerX, centerY - hlen * 0.03);
       ctx.strokeText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.fillText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
-      ctx.strokeText('Code by lchzh3473', centerX, centerY);
-      ctx.fillText('Code by lchzh3473', centerX, centerY);
+      ctx.strokeText('Code by lchz\x683\x3473', centerX, centerY);
+      ctx.fillText('Code by lchz\x683\x3473', centerX, centerY);
       ctx.strokeText('Time: ' + nowRealTime.toFixed(2) + 'ms', centerX, centerY + hlen * 0.03);
       ctx.fillText('Time: ' + nowRealTime.toFixed(2) + 'ms', centerX, centerY + hlen * 0.03);
       ctx.lineWidth = noteScale * 10;
