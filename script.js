@@ -102,13 +102,14 @@ const audio = {
 const presets = [
   { chart: 'PastelLines.RekuMochizuki.0', level: 'IN' }, // 初始谱面
   { chart: 'Bamboo.rissyuu.0', level: 'IN' }, // BpmShifts长度大于1
-  { chart: 'RIP.eicateve.0', level: 'IN' }, // 最大谱面
+  { chart: 'RIP.eicateve.0', level: 'IN' }, // 旧时代最大谱面
   { chart: 'TheNextArcady.SEPHID.0', level: 'IN' }, // 包含透明渐变背景、CameraMove包含xPositionKeyPoints
   { chart: 'OnAndOn.ETIA.0', level: 'IN' }, // BpmShifts为空数组
   { chart: 'Vrtuaresort.seatrus.0', level: 'IN' }, // CameraMove包含xPositionKeyPoints
-  { chart: 'LavenderLeaffeatLexi.VauBoy.0', level: 'IN' },
-  { chart: 'SakuraFubuki.Street.0', level: 'IN' },
-  { chart: 'RestrictedAccess.Knighthood.0', level: 'IN' },
+  { chart: 'LavenderLeaffeatLexi.VauBoy.0', level: 'IN' }, // 好长一首歌qwq
+  { chart: 'SakuraFubuki.Street.0', level: 'IN' }, // 开头字体显示bug fix
+  { chart: 'RestrictedAccess.Knighthood.0', level: 'IN' }, // 特色表演
+  { chart: 'SwingSweetTweeDance.Uske.0', level: 'IN' }, // CameraMove.scaleKeyPoints初始time不为0
   { chart: 'Antler.Juggernaut.0', level: 'IN' }, // lineCap = round 包含点状线条
   { chart: 'slichertz.Sobrem.0', level: 'IN' }, // 包含负y值音符
   { chart: 'BRAVEROAD.umavsMorimoriAtsushi.0', level: 'AT' } // AT谱面+多个theme
@@ -419,12 +420,13 @@ async function main() {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = 'black';
       ctx.strokeStyle = 'white';
+      ctx.lineWidth = hlen * 0.004;
       ctx.font = hlen * 0.02 + 'px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       // Copyright
-      ctx.strokeText('Rizline Simulator v0.1.7', centerX, centerY - hlen * 0.03);
-      ctx.fillText('Rizline Simulator v0.1.7', centerX, centerY - hlen * 0.03);
+      ctx.strokeText('Rizline Simulator v0.1.8', centerX, centerY - hlen * 0.03);
+      ctx.fillText('Rizline Simulator v0.1.8', centerX, centerY - hlen * 0.03);
       ctx.strokeText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.fillText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.strokeText('Code by lchz\x683\x3473', centerX, centerY);
@@ -612,14 +614,19 @@ async function main() {
     }
 
     function calcqwq(nowRealTime) {
-      for (const i of chart.cameraMove.scaleKeyPoints) {
+      const { scaleKeyPoints, xPositionKeyPoints } = chart.cameraMove;
+      if (scaleKeyPoints.length) chart.cameraMove.currentScale = scaleKeyPoints[0].startValue; // WIP
+      for (const i of scaleKeyPoints) {
         if (nowRealTime > i.endRealTime) continue;
+        if (nowRealTime < i.startRealTime) break;
         const delta = tween[i.easeType]((nowRealTime - i.startRealTime) / (i.endRealTime - i.startRealTime));
         chart.cameraMove.currentScale = i.startValue + (i.endValue - i.startValue) * delta;
         break;
       }
-      for (const i of chart.cameraMove.xPositionKeyPoints) {
+      if (xPositionKeyPoints.length) chart.cameraMove.currentX = xPositionKeyPoints[0].startValue; // WIP
+      for (const i of xPositionKeyPoints) {
         if (nowRealTime > i.endRealTime) continue;
+        if (nowRealTime < i.startRealTime) break;
         const delta = tween[i.easeType]((nowRealTime - i.startRealTime) / (i.endRealTime - i.startRealTime));
         chart.cameraMove.currentX = i.startValue + (i.endValue - i.startValue) * delta;
         break;
