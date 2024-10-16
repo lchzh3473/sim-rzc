@@ -614,7 +614,7 @@ async function main() {
       for (const i of chart.cameraMove.scaleKeyPoints) {
         if (nowRealTime > i.endRealTime) continue;
         if (i.startRealTime === i.endRealTime) {
-          chart.cameraMove.currentScale = i.endScale;
+          chart.cameraMove.currentScale = i.endValue;
           break;
         }
         const delta = tween[i.easeType]((nowRealTime - i.startRealTime) / (i.endRealTime - i.startRealTime));
@@ -624,7 +624,7 @@ async function main() {
       for (const i of chart.cameraMove.xPositionKeyPoints) {
         if (nowRealTime > i.endRealTime) continue;
         if (i.startRealTime === i.endRealTime) {
-          chart.cameraMove.currentX = i.endScale;
+          chart.cameraMove.currentX = i.endValue;
           break;
         }
         const delta = tween[i.easeType]((nowRealTime - i.startRealTime) / (i.endRealTime - i.startRealTime));
