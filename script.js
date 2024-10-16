@@ -608,25 +608,18 @@ async function main() {
         // ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
+      // 绘制打击特效(WIP)
     }
 
     function calcqwq(nowRealTime) {
       for (const i of chart.cameraMove.scaleKeyPoints) {
         if (nowRealTime > i.endRealTime) continue;
-        if (i.startRealTime === i.endRealTime) {
-          chart.cameraMove.currentScale = i.endValue;
-          break;
-        }
         const delta = tween[i.easeType]((nowRealTime - i.startRealTime) / (i.endRealTime - i.startRealTime));
         chart.cameraMove.currentScale = i.startValue + (i.endValue - i.startValue) * delta;
         break;
       }
       for (const i of chart.cameraMove.xPositionKeyPoints) {
         if (nowRealTime > i.endRealTime) continue;
-        if (i.startRealTime === i.endRealTime) {
-          chart.cameraMove.currentX = i.endValue;
-          break;
-        }
         const delta = tween[i.easeType]((nowRealTime - i.startRealTime) / (i.endRealTime - i.startRealTime));
         chart.cameraMove.currentX = i.startValue + (i.endValue - i.startValue) * delta;
         break;
@@ -716,10 +709,6 @@ function getCurrentColor(colorPoints, nowRealTime) {
   for (const j of colorPoints) {
     if (nowRealTime > j.endRealTime) continue;
     if (nowRealTime < j.startRealTime) break;
-    if (j.startRealTime === j.endRealTime) {
-      currentColor = j.endColor;
-      break;
-    }
     const delta = (nowRealTime - j.startRealTime) / (j.endRealTime - j.startRealTime);
     currentColor = {
       r: j.startColor.r + (j.endColor.r - j.startColor.r) * delta,
