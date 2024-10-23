@@ -114,12 +114,13 @@ const presets = [
   { chart: 'slichertz.Sobrem.0', level: 'IN' }, // 包含负y值音符
   { chart: 'BRAVEROAD.umavsMorimoriAtsushi.0', level: 'AT' } // AT谱面+多个theme
 ];
+const assets = atob('L3NpbS1yemMtYXNzZXRz');
 const params = new URLSearchParams(location.search);
 const selectedChart = params.get('chart'); // 如果chart输入数字，就用预设
 const selectedSpeed = params.get('speed') || '3.5';
 const selectedLevel = params.get('level') || 'IN';
 const info = presets[+selectedChart] || { chart: selectedChart, level: selectedLevel };
-const res = [`/sim-rzc-assets/${info.chart}/music.ogg`, `/sim-rzc-assets/${info.chart}/Chart_${info.level}.json`];
+const res = [`${assets}/${info.chart}/music.ogg`, `${assets}/${info.chart}/Chart_${info.level}.json`];
 // const res = [`../plugins/bundle/ラグトレイン.稲葉曇.0/Music.ogg`, `../plugins/bundle/ラグトレイン.稲葉曇.0/Chart_HD_repaired.json`];
 // const res = ['../assets/PastelLines.RekuMochizuki.0/music.ogg', '../plugins/bundle/riztime_test/Chart_EZ.json'];
 const linePoints = [];
@@ -148,8 +149,8 @@ async function main() {
   };
   audio.init();
   const bgm = await audio.decode(await (await fetch(res[0])).arrayBuffer());
-  const hit1 = await audio.decode(await (await fetch('res/rizline_level_tap_1.ogg')).arrayBuffer());
-  const hit2 = await audio.decode(await (await fetch('res/rizline_level_drag_1.ogg')).arrayBuffer());
+  const hit1 = await audio.decode(await (await fetch(`${assets}/rizline_level_tap_1.ogg`)).arrayBuffer());
+  const hit2 = await audio.decode(await (await fetch(`${assets}/rizline_level_drag_1.ogg`)).arrayBuffer());
   const chart = await (await fetch(res[1])).json();
   console.log(chart);
   self.chart = chart;
