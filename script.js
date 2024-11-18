@@ -176,22 +176,22 @@ async function main() {
   }
 
   function prepChart() {
-    if (chart.fileVersion !== 0) throw new Error('fileVersion is not 0');
+    // if (chart.fileVersion !== 0) throw new Error('fileVersion is not 0');
     const bpmShifts = chart.bpmShifts;
     if (!bpmShifts.length) bpmShifts.push({ time: 0, value: 1, easeType: 0, floorPosition: 0 });
     bpmShifts.forEach(modify);
-    const getTime = time => {
+    const getSeconds = time => {
       let result = Infinity;
       for (const i of bpmShifts) {
         if (time > i.endTime) continue;
         if (time < i.startTime) break;
         result = i.floorPosition + ((time - i.startTime) / i.startValue / chart.bPM) * 60;
       }
-      return result * 1e3;
+      return result;
     };
     for (const i of bpmShifts) {
-      i.startRealTime = getTime(i.startTime);
-      i.endRealTime = getTime(i.endTime);
+      i.startSeconds = getSeconds(i.startTime);
+      i.endSeconds = getSeconds(i.endTime);
       if (i.easeType !== 0) console.error('EaseType is not 0:', i.easeType);
       else delete i.easeType;
     }
@@ -206,10 +206,10 @@ async function main() {
     }
     for (const i of chart.challengeTimes) {
       i.themeIndex = chart.challengeTimes.indexOf(i) + 1;
-      i.startRealTime = getTime(i.start);
-      i.endRealTime = getTime(i.end);
-      i.transStartRealTime = i.startRealTime + i.transTime * 1e3;
-      i.transEndRealTime = i.endRealTime + i.transTime * 1e3;
+      i.startSeconds = getSeconds(i.start);
+      i.endSeconds = getSeconds(i.end);
+      i.transStartSeconds = i.startSeconds + i.transTime;
+      i.transEndSeconds = i.endSeconds + i.transTime;
     }
     chart.canvasMoves.forEach((i, index) => {
       if (i.index !== index) throw new Error('CanvasMove index is not correct');
@@ -217,30 +217,30 @@ async function main() {
     for (const i of chart.canvasMoves) {
       i.xPositionKeyPoints.forEach(modify);
       for (const j of i.xPositionKeyPoints) {
-        j.startRealTime = getTime(j.startTime);
-        j.endRealTime = getTime(j.endTime);
+        j.startSeconds = getSeconds(j.startTime);
+        j.endSeconds = getSeconds(j.endTime);
         if (j.floorPosition !== 0) console.error('FloorPosition is not 0:', j.floorPosition);
         else delete j.floorPosition;
       }
       i.speedKeyPoints.forEach(modify);
       for (const j of i.speedKeyPoints) {
-        j.startRealTime = getTime(j.startTime);
-        j.endRealTime = getTime(j.endTime);
+        j.startSeconds = getSeconds(j.startTime);
+        j.endSeconds = getSeconds(j.endTime);
         if (j.easeType !== 0) console.error('EaseType is not 0:', j.easeType);
         else delete j.easeType;
       }
     }
     chart.cameraMove.scaleKeyPoints.forEach(modify);
     for (const i of chart.cameraMove.scaleKeyPoints) {
-      i.startRealTime = getTime(i.startTime);
-      i.endRealTime = getTime(i.endTime);
+      i.startSeconds = getSeconds(i.startTime);
+      i.endSeconds = getSeconds(i.endTime);
       if (i.floorPosition !== 0) console.error('FloorPosition is not 0:', i.floorPosition);
       else delete i.floorPosition;
     }
     chart.cameraMove.xPositionKeyPoints.forEach(modify);
     for (const i of chart.cameraMove.xPositionKeyPoints) {
-      i.startRealTime = getTime(i.startTime);
-      i.endRealTime = getTime(i.endTime);
+      i.startSeconds = getSeconds(i.startTime);
+      i.endSeconds = getSeconds(i.endTime);
       // if (i.floorPosition !== 0) console.error('FloorPosition is not 0:', i.floorPosition);
       // else delete i.floorPosition;
     }
@@ -282,27 +282,27 @@ async function main() {
     }
     chart.lines.forEach((v, i) => (v.id = i));
     for (const i of chart.lines) {
-      i.startRealTime = getTime(i.linePoints[0].time);
-      i.endRealTime = getTime(i.linePoints[i.linePoints.length - 1].time);
+      i.startSeconds = getSeconds(i.linePoints[0].time);
+      i.endSeconds = getSeconds(i.linePoints[i.linePoints.length - 1].time);
       i.linePoints.forEach(modify);
       for (const j of i.linePoints) {
         j.lineId = i.id;
-        j.startRealTime = getTime(j.startTime);
-        j.endRealTime = getTime(j.endTime);
+        j.startSeconds = getSeconds(j.startTime);
+        j.endSeconds = getSeconds(j.endTime);
         j.startCanvas = chart.canvasMoves[j.startCanvasIndex];
         j.endCanvas = chart.canvasMoves[j.endCanvasIndex];
         linePoints.push(j);
       }
       i.notes.forEach((v, i) => (v.id = i));
       for (const j of i.notes) {
-        j.realTime = getTime(j.time);
-        if (j.realTime < i.startRealTime || i.endRealTime < j.realTime) console.error('Note is out of line:', j);
+        j.seconds = getSeconds(j.time);
+        if (j.seconds < i.startSeconds || i.endSeconds < j.seconds) console.error('Note is out of line:', j);
         for (const k of i.linePoints) {
-          if (k.startRealTime <= j.realTime && j.realTime <= k.endRealTime && k.endRealTime !== Infinity) {
+          if (k.startSeconds <= j.seconds && j.seconds <= k.endSeconds && k.endSeconds !== Infinity) {
             j.linePoint = k;
             j.startCanvas = chart.canvasMoves[k.startCanvasIndex];
             j.endCanvas = chart.canvasMoves[k.endCanvasIndex];
-            j.progress = (j.realTime - k.startRealTime) / (k.endRealTime - k.startRealTime);
+            j.progress = (j.seconds - k.startSeconds) / (k.endSeconds - k.startSeconds);
             // break;
           }
         }
@@ -311,7 +311,7 @@ async function main() {
             j.holdEndTime = j.otherInformations[0];
             j.holdEndCanvasIndex = j.otherInformations[1];
             j.holdEndFloorPosition = j.otherInformations[2];
-            j.holdEndRealTime = getTime(j.holdEndTime);
+            j.holdEndSeconds = getSeconds(j.holdEndTime);
           } else console.error('OtherInformations is empty:', j);
         } else {
           if (j.otherInformations.length) {
@@ -322,13 +322,13 @@ async function main() {
       }
       i.judgeRingColor.forEach(modify);
       for (const j of i.judgeRingColor) {
-        j.startRealTime = getTime(j.startTime);
-        j.endRealTime = getTime(j.endTime);
+        j.startSeconds = getSeconds(j.startTime);
+        j.endSeconds = getSeconds(j.endTime);
       }
       i.lineColor.forEach(modify);
       for (const j of i.lineColor) {
-        j.startRealTime = getTime(j.startTime);
-        j.endRealTime = getTime(j.endTime);
+        j.startSeconds = getSeconds(j.startTime);
+        j.endSeconds = getSeconds(j.endTime);
       }
     }
     // linePoints.sort((a, b) => b.startCanvasIndex - a.startCanvasIndex);
@@ -341,45 +341,45 @@ async function main() {
       for (const j of i.notes) {
         setTimeout(() => {
           audio.play(j.type == 1 ? hit2 : hit1);
-          console.debug(j.type === 0 ? 'Tap' : j.type === 1 ? 'Drag' : 'Hold', /* i.id + '.' + j.id ,*/ 'at', Math.round(j.realTime), 'ms');
-        }, j.realTime);
+          console.debug(j.type === 0 ? 'Tap' : j.type === 1 ? 'Drag' : 'Hold', /* i.id + '.' + j.id ,*/ 'at', Math.round(j.seconds * 1e3), 'ms');
+        }, j.seconds * 1e3);
       }
     }
     const now = performance.now();
     loop();
 
     function loop() {
-      const nowRealTime = self.qwq ? self.qwq : performance.now() - now;
-      calcqwq(nowRealTime);
+      const nowSeconds = (self.qwq ? self.qwq : performance.now() - now) / 1e3;
+      calcqwq(nowSeconds);
       const scale = chart.cameraMove.currentScale;
       // ctx.clearRect(0, 0, canvas.width, canvas.height);
       // 处理challengeTimes
-      if (chart.challengeTimes.every(i => nowRealTime < i.transStartRealTime || nowRealTime > i.endRealTime)) {
-        drawqwq(ctx, nowRealTime, scale, chart.themes[0].bgColor, chart.themes[0].bgColor0, chart.themes[0].bgColor1, chart.themes[0].noteColor);
+      if (chart.challengeTimes.every(i => nowSeconds < i.transStartSeconds || nowSeconds > i.endSeconds)) {
+        drawqwq(ctx, nowSeconds, scale, chart.themes[0].bgColor, chart.themes[0].bgColor0, chart.themes[0].bgColor1, chart.themes[0].noteColor);
       }
       for (const i of chart.challengeTimes) {
         const theme = chart.themes[i.themeIndex];
-        if (nowRealTime > i.endRealTime && nowRealTime <= i.transEndRealTime) {
-          const transProgress = 1 - (nowRealTime - i.endRealTime) / (i.transEndRealTime - i.endRealTime);
+        if (nowSeconds > i.endSeconds && nowSeconds <= i.transEndSeconds) {
+          const transProgress = 1 - (nowSeconds - i.endSeconds) / (i.transEndSeconds - i.endSeconds);
           ctx.globalCompositeOperation = 'destination-out';
           ctx.fillStyle = 'black';
           ctx.beginPath();
           ctx.arc(centerX, 0, centerY * 2 * transProgress * 15, 0, Math.PI * 2);
           ctx.fill();
-          drawqwq(ctxfg, nowRealTime, scale, theme.bgColor, theme.bgColor0, theme.bgColor1, theme.noteColor);
+          drawqwq(ctxfg, nowSeconds, scale, theme.bgColor, theme.bgColor0, theme.bgColor1, theme.noteColor);
           ctx.globalCompositeOperation = 'destination-over';
           ctx.drawImage(canvasfg, 0, 0);
           ctx.globalCompositeOperation = 'source-over';
-        } else if (nowRealTime > i.transStartRealTime && nowRealTime <= i.endRealTime) {
-          drawqwq(ctx, nowRealTime, scale, theme.bgColor, theme.bgColor0, theme.bgColor1, theme.noteColor);
-        } else if (nowRealTime > i.startRealTime && nowRealTime <= i.transStartRealTime) {
-          const transProgress = (nowRealTime - i.startRealTime) / (i.transStartRealTime - i.startRealTime);
+        } else if (nowSeconds > i.transStartSeconds && nowSeconds <= i.endSeconds) {
+          drawqwq(ctx, nowSeconds, scale, theme.bgColor, theme.bgColor0, theme.bgColor1, theme.noteColor);
+        } else if (nowSeconds > i.startSeconds && nowSeconds <= i.transStartSeconds) {
+          const transProgress = (nowSeconds - i.startSeconds) / (i.transStartSeconds - i.startSeconds);
           ctx.globalCompositeOperation = 'destination-out';
           ctx.fillStyle = 'black';
           ctx.beginPath();
           ctx.arc(centerX, centerY * 2, centerY * 2 * transProgress * 15, 0, Math.PI * 2);
           ctx.fill();
-          drawqwq(ctxfg, nowRealTime, scale, theme.bgColor, theme.bgColor0, theme.bgColor1, theme.noteColor);
+          drawqwq(ctxfg, nowSeconds, scale, theme.bgColor, theme.bgColor0, theme.bgColor1, theme.noteColor);
           ctx.globalCompositeOperation = 'destination-over';
           ctx.drawImage(canvasfg, 0, 0);
           ctx.globalCompositeOperation = 'source-over';
@@ -388,7 +388,7 @@ async function main() {
       for (const i of chart.lines) {
         const x = centerX + i.currentX * scale * wlen;
         // 画圈
-        if (i.currentJudgeRingColor && nowRealTime >= i.startRealTime && nowRealTime <= i.endRealTime) {
+        if (i.currentJudgeRingColor && nowSeconds >= i.startSeconds && nowSeconds <= i.endSeconds) {
           ctx.strokeStyle = rgba2Str(i.currentJudgeRingColor);
           ctx.lineWidth = noteScale * 10 * scale;
           ctx.beginPath();
@@ -396,7 +396,7 @@ async function main() {
           ctx.stroke();
         }
         // 标记线id
-        if (nowRealTime >= i.startRealTime && nowRealTime <= i.endRealTime) {
+        if (nowSeconds >= i.startSeconds && nowSeconds <= i.endSeconds) {
           ctx.fillStyle = 'black';
           ctx.font = hlen * 0.02 + 'px Arial';
           ctx.textAlign = 'center';
@@ -416,7 +416,7 @@ async function main() {
       requestAnimationFrame(loop);
     }
 
-    function drawqwq(ctx, nowRealTime, scale, bgColor, bgColor0, bgColor1, noteColor) {
+    function drawqwq(ctx, nowSeconds, scale, bgColor, bgColor0, bgColor1, noteColor) {
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = 'black';
@@ -432,8 +432,8 @@ async function main() {
       ctx.fillText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.strokeText('Code by lchz\x683\x3473', centerX, centerY);
       ctx.fillText('Code by lchz\x683\x3473', centerX, centerY);
-      ctx.strokeText('Time: ' + nowRealTime.toFixed(2) + 'ms', centerX, centerY + hlen * 0.03);
-      ctx.fillText('Time: ' + nowRealTime.toFixed(2) + 'ms', centerX, centerY + hlen * 0.03);
+      ctx.strokeText('Time: ' + (nowSeconds * 1e3).toFixed(2) + 'ms', centerX, centerY + hlen * 0.03);
+      ctx.fillText('Time: ' + (nowSeconds * 1e3).toFixed(2) + 'ms', centerX, centerY + hlen * 0.03);
       ctx.lineWidth = noteScale * 10;
       for (const j of linePoints) {
         // linePoints连线
@@ -517,9 +517,9 @@ async function main() {
       for (const i of chart.lines) {
         // 绘制note
         for (const j of i.notes) {
-          const realDelta = j.realTime - nowRealTime;
+          const deltaSeconds = j.seconds - nowSeconds;
           if (j.type === 0) {
-            if (realDelta < 0) continue;
+            if (deltaSeconds < 0) continue;
             const x = centerX + j.currentX * scale * wlen;
             const y = ringY - j.currentY * scale * speed * hhl;
             ctx.fillStyle = 'black';
@@ -531,7 +531,7 @@ async function main() {
             ctx.arc(x, y, noteScale * 26 * scale, 0, Math.PI * 2);
             ctx.fill();
           } else if (j.type === 1) {
-            if (realDelta < 0) continue;
+            if (deltaSeconds < 0) continue;
             const x = centerX + j.currentX * scale * wlen;
             const y = ringY - j.currentY * scale * speed * hhl;
             ctx.fillStyle = 'black';
@@ -543,14 +543,14 @@ async function main() {
             ctx.arc(x, y, noteScale * 22 * scale, 0, Math.PI * 2);
             ctx.fill();
           } else if (j.type === 2) {
-            if (j.holdEndRealTime - nowRealTime < -250) continue; // 0.25s
+            if (j.holdEndSeconds - nowSeconds < -0.25) continue; // 0.25s
             const x = centerX + j.currentX * scale * wlen;
-            const y = ringY - (realDelta < 0 ? 0 : j.currentY * scale * speed * hhl);
+            const y = ringY - (deltaSeconds < 0 ? 0 : j.currentY * scale * speed * hhl);
             ctx.strokeStyle = 'black';
             ctx.fillStyle = noteColor;
             ctx.lineWidth = noteScale * 10 * scale;
-            if (j.holdEndRealTime - nowRealTime < 0) {
-              const progress = 1 - ((nowRealTime - j.holdEndRealTime) / 250) ** 3; // todo
+            if (j.holdEndSeconds - nowSeconds < 0) {
+              const progress = 1 - ((nowSeconds - j.holdEndSeconds) / 0.25) ** 3; // todo
               ctx.beginPath();
               ctx.arc(x, y, noteScale * 34 * scale * progress, 0, Math.PI * 2);
               ctx.stroke();
@@ -614,21 +614,21 @@ async function main() {
       // 绘制打击特效(WIP)
     }
 
-    function calcqwq(nowRealTime) {
+    function calcqwq(nowSeconds) {
       const { scaleKeyPoints, xPositionKeyPoints } = chart.cameraMove;
       if (scaleKeyPoints.length) chart.cameraMove.currentScale = scaleKeyPoints[0].startValue; // WIP
       for (const i of scaleKeyPoints) {
-        if (nowRealTime > i.endRealTime) continue;
-        if (nowRealTime < i.startRealTime) break;
-        const delta = tween[i.easeType]((nowRealTime - i.startRealTime) / (i.endRealTime - i.startRealTime));
+        if (nowSeconds > i.endSeconds) continue;
+        if (nowSeconds < i.startSeconds) break;
+        const delta = tween[i.easeType]((nowSeconds - i.startSeconds) / (i.endSeconds - i.startSeconds));
         chart.cameraMove.currentScale = i.startValue + (i.endValue - i.startValue) * delta;
         break;
       }
       if (xPositionKeyPoints.length) chart.cameraMove.currentX = xPositionKeyPoints[0].startValue; // WIP
       for (const i of xPositionKeyPoints) {
-        if (nowRealTime > i.endRealTime) continue;
-        if (nowRealTime < i.startRealTime) break;
-        const delta = tween[i.easeType]((nowRealTime - i.startRealTime) / (i.endRealTime - i.startRealTime));
+        if (nowSeconds > i.endSeconds) continue;
+        if (nowSeconds < i.startSeconds) break;
+        const delta = tween[i.easeType]((nowSeconds - i.startSeconds) / (i.endSeconds - i.startSeconds));
         chart.cameraMove.currentX = i.startValue + (i.endValue - i.startValue) * delta;
         break;
       }
@@ -636,22 +636,22 @@ async function main() {
       for (const i of chart.canvasMoves) {
         i.currentX = (i.xPositionKeyPoints[0].startValue || 0) - chart.cameraMove.currentX;
         for (const j of i.xPositionKeyPoints) {
-          if (nowRealTime > j.endRealTime) continue;
-          if (nowRealTime < j.startRealTime) break;
-          const delta = tween[j.easeType]((nowRealTime - j.startRealTime) / (j.endRealTime - j.startRealTime));
+          if (nowSeconds > j.endSeconds) continue;
+          if (nowSeconds < j.startSeconds) break;
+          const delta = tween[j.easeType]((nowSeconds - j.startSeconds) / (j.endSeconds - j.startSeconds));
           i.currentX = j.startValue + (j.endValue - j.startValue) * delta - chart.cameraMove.currentX;
         }
         for (const j of i.speedKeyPoints) {
-          if (nowRealTime > j.endRealTime) continue;
-          if (nowRealTime < j.startRealTime) break;
-          i.currentY = j.floorPosition + ((nowRealTime - j.startRealTime) * j.startValue) / 1e3;
+          if (nowSeconds > j.endSeconds) continue;
+          if (nowSeconds < j.startSeconds) break;
+          i.currentY = j.floorPosition + (nowSeconds - j.startSeconds) * j.startValue;
         }
       }
       for (const i of chart.lines) {
-        const realTime = nowRealTime;
+        const seconds = nowSeconds;
         for (const j of i.linePoints) {
-          if (realTime > j.endRealTime) continue;
-          if (realTime < j.startRealTime) break;
+          if (seconds > j.endSeconds) continue;
+          if (seconds < j.startSeconds) break;
           const x1 = j.startX + chart.canvasMoves[j.startCanvasIndex].currentX;
           const x2 = j.endX + chart.canvasMoves[j.endCanvasIndex].currentX;
           const y1 = j.startY - chart.canvasMoves[j.startCanvasIndex].currentY;
@@ -661,29 +661,29 @@ async function main() {
         }
         // 通过缓动函数计算出note的水平位置
         for (const j of i.notes) {
-          const realTime = j.realTime;
+          const seconds = j.seconds;
           const k = j.linePoint;
           const x1 = k.startX + chart.canvasMoves[k.startCanvasIndex].currentX;
           const x2 = k.endX + chart.canvasMoves[k.endCanvasIndex].currentX;
-          const delta = tween[k.easeType]((realTime - k.startRealTime) / (k.endRealTime - k.startRealTime));
+          const delta = tween[k.easeType]((seconds - k.startSeconds) / (k.endSeconds - k.startSeconds));
           j.currentX = x1 + (x2 - x1) * delta;
           j.currentY = j.floorPosition - chart.canvasMoves[k.startCanvasIndex].currentY;
           if (j.type === 2) {
-            if (nowRealTime >= realTime) {
+            if (nowSeconds >= seconds) {
               for (const k of i.linePoints) {
-                if (nowRealTime > k.endRealTime) continue;
-                if (nowRealTime < k.startRealTime) break;
+                if (nowSeconds > k.endSeconds) continue;
+                if (nowSeconds < k.startSeconds) break;
                 const x1 = k.startX + chart.canvasMoves[k.startCanvasIndex].currentX;
                 const x2 = k.endX + chart.canvasMoves[k.endCanvasIndex].currentX;
-                const delta = tween[k.easeType]((nowRealTime - k.startRealTime) / (k.endRealTime - k.startRealTime));
+                const delta = tween[k.easeType]((nowSeconds - k.startSeconds) / (k.endSeconds - k.startSeconds));
                 j.currentX = x1 + (x2 - x1) * delta;
               }
             }
             j.currentHoldY = j.holdEndFloorPosition - chart.canvasMoves[j.holdEndCanvasIndex].currentY;
           }
         }
-        i.currentJudgeRingColor = getCurrentColor(i.judgeRingColor, nowRealTime);
-        const currentLineColor = getCurrentColor(i.lineColor, nowRealTime);
+        i.currentJudgeRingColor = getCurrentColor(i.judgeRingColor, nowSeconds);
+        const currentLineColor = getCurrentColor(i.lineColor, nowSeconds);
         if (currentLineColor) {
           for (const j of i.linePoints) {
             j.currentStartColor = rgba2Str(mixColor(j.startColor, currentLineColor));
@@ -711,13 +711,13 @@ function mixColor({ r: r1, g: g1, b: b1, a: a1 }, { r: r2, g: g2, b: b2, a: a2 }
   return { r: r1 + (r2 - r1) * a0, g: g1 + (g2 - g1) * a0, b: b1 + (b2 - b1) * a0, a: a1 };
 }
 
-function getCurrentColor(colorPoints, nowRealTime) {
+function getCurrentColor(colorPoints, nowSeconds) {
   let currentColor = null;
   if (colorPoints.length) currentColor = colorPoints[0].startColor;
   for (const j of colorPoints) {
-    if (nowRealTime > j.endRealTime) continue;
-    if (nowRealTime < j.startRealTime) break;
-    const delta = (nowRealTime - j.startRealTime) / (j.endRealTime - j.startRealTime);
+    if (nowSeconds > j.endSeconds) continue;
+    if (nowSeconds < j.startSeconds) break;
+    const delta = (nowSeconds - j.startSeconds) / (j.endSeconds - j.startSeconds);
     currentColor = {
       r: j.startColor.r + (j.endColor.r - j.startColor.r) * delta,
       g: j.startColor.g + (j.endColor.g - j.startColor.g) * delta,
