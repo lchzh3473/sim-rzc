@@ -102,7 +102,7 @@ const audio = {
 const presets = [
   { chart: 'PastelLines.RekuMochizuki.0', level: 'IN' }, // 初始谱面
   { chart: 'Bamboo.rissyuu.0', level: 'IN' }, // BpmShifts长度大于1
-  { chart: 'RIP.eicateve.0', level: 'IN' }, // 旧时代最大谱面
+  { chart: 'RIP.eicateve.0', level: 'IN' }, // 线动成面
   { chart: 'TheNextArcady.SEPHID.0', level: 'IN' }, // 包含透明渐变背景、CameraMove包含xPositionKeyPoints
   { chart: 'OnAndOn.ETIA.0', level: 'IN' }, // BpmShifts为空数组
   { chart: 'Vrtuaresort.seatrus.0', level: 'IN' }, // CameraMove包含xPositionKeyPoints
@@ -306,16 +306,21 @@ async function main() {
             // break;
           }
         }
+        const oi = j.otherInformations;
         if (j.type == 2) {
-          if (j.otherInformations.length) {
-            j.holdEndTime = j.otherInformations[0];
-            j.holdEndCanvasIndex = j.otherInformations[1];
-            j.holdEndFloorPosition = j.otherInformations[2];
+          if (oi.length) {
+            if (oi.length !== 3) console.error('[=2] must have 3 elements, but got', j);
+            j.holdEndTime = oi[0];
+            j.holdEndCanvasIndex = oi[1];
+            j.holdEndFloorPosition = oi[2];
             j.holdEndSeconds = getSeconds(j.holdEndTime);
-          } else console.error('OtherInformations is empty:', j);
+          } else console.error('[=2] is empty:', j);
         } else {
-          if (j.otherInformations.length) {
-            console.error('OtherInformations is not empty:', j.otherInformations);
+          if (oi.length) {
+            const valid = oi.length === 3 && oi[0] === 0 && oi[1] === 0 && oi[2] === 0;
+            if (!valid) console.error('[!2] must be [] or [0,0,0], but got', j);
+          } else {
+            // legal
           }
         }
         delete j.otherInformations;
@@ -426,8 +431,8 @@ async function main() {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       // Copyright
-      ctx.strokeText('Rizline Simulator v0.1.8', centerX, centerY - hlen * 0.03);
-      ctx.fillText('Rizline Simulator v0.1.8', centerX, centerY - hlen * 0.03);
+      ctx.strokeText('Rizline Simulator v0.1.9', centerX, centerY - hlen * 0.03);
+      ctx.fillText('Rizline Simulator v0.1.9', centerX, centerY - hlen * 0.03);
       ctx.strokeText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.fillText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.strokeText('Code by lchz\x683\x3473', centerX, centerY);
@@ -449,7 +454,7 @@ async function main() {
         const cx2 = centerX + x2 * wlen;
         const easeType = j.easeType;
         ctx.beginPath();
-        if (easeType === 0) {
+        if (easeType === 0 || cx1 === cx2) {
           ctx.moveTo(cx1, cy1);
           ctx.lineTo(cx2, cy2);
         } else if (easeType === 13) {
@@ -470,7 +475,7 @@ async function main() {
           // ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, cx2, cy2);
           // 17.9ms
           ctx.moveTo(cx1, cy1);
-          for (let t = 0; t < 1; t += 0.0625) {
+          for (let t = 0; t < 1; t += 0.03125) {
             const tx = cx1 + (cx2 - cx1) * tween[easeType](t);
             const ty = cy1 + (cy2 - cy1) * t;
             ctx.lineTo(tx, ty);
