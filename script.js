@@ -1,4 +1,4 @@
-const tween = [
+const tweenLegacy = [
   t => t, // 0
   t => 1 - Math.cos((t * Math.PI) / 2), // 1
   t => Math.sin((t * Math.PI) / 2), // 2
@@ -15,6 +15,27 @@ const tween = [
   () => 0, // 13
   () => 1 // 14
   // t => t // 15, should be Animation Curve
+];
+const tween = [
+  t => t, // 0
+  t => t ** 2, // 1
+  t => 1 - (t - 1) ** 2, // 2
+  t => ((t *= 2) < 1 ? t ** 2 : -((t - 2) ** 2 - 2)) / 2, // 3
+  t => t ** 3, // 4
+  t => 1 + (t - 1) ** 3, // 5
+  t => ((t *= 2) < 1 ? t ** 3 : (t - 2) ** 3 + 2) / 2, // 6
+  t => t ** 4, // 7
+  t => 1 - (t - 1) ** 4, // 18
+  t => ((t *= 2) < 1 ? t ** 4 : -((t - 2) ** 4 - 2)) / 2, // 9
+  t => t ** 5, // 10
+  t => 1 + (t - 1) ** 5, // 11
+  t => ((t *= 2) < 1 ? t ** 5 : (t - 2) ** 5 + 2) / 2, // 12
+  () => 0, // 13
+  () => 1, // 14
+  t => 1 - Math.sqrt(1 - t ** 2), //15
+  t => Math.sqrt(1 - (t - 1) ** 2), //16
+  t => Math.sin((t * Math.PI) / 2), //17
+  t => 1 - Math.cos((t * Math.PI) / 2) //18
 ];
 /* prettier-ignore */
 const tweenB = [
@@ -112,7 +133,10 @@ const presets = [
   { chart: 'SwingSweetTweeDance.Uske.0', level: 'IN' }, // CameraMove.scaleKeyPoints初始time不为0
   { chart: 'Antler.Juggernaut.0', level: 'IN' }, // lineCap = round 包含点状线条
   { chart: 'slichertz.Sobrem.0', level: 'IN' }, // 包含负y值音符
-  { chart: 'BRAVEROAD.umavsMorimoriAtsushi.0', level: 'AT' } // AT谱面+多个theme
+  { chart: 'BRAVEROAD.umavsMorimoriAtsushi.0', level: 'AT' }, // AT谱面+多个theme
+  { chart: 'Inevitability.kuro.1', level: 'SP' }, // SP谱面
+  { chart: 'CosmosCapsule.AsTroyBakami.0.mr', level: 'IN' }, // 异象谱面
+  { chart: 'NeverSayGoodbye.黒魔.0', level: 'AT' } // AT谱面+非常多的theme
 ];
 const assets = atob('L3NpbS1yemMtYXNzZXRz');
 const params = new URLSearchParams(location.search);
@@ -120,7 +144,8 @@ const selectedChart = params.get('chart'); // 如果chart输入数字，就用�
 const selectedSpeed = params.get('speed') || '3.5';
 const selectedLevel = params.get('level') || 'IN';
 const info = presets[+selectedChart] || { chart: selectedChart, level: selectedLevel };
-const res = [`${assets}/${info.chart}/music.ogg`, `${assets}/${info.chart}/Chart_${info.level}.json`];
+const musicChart = info.chart.endsWith('.0') ? info.chart : info.chart.replace(/\.1$|\.0\.mr$/, '.0'); // 异象谱面用原始谱面路径的音频
+const res = [`${assets}/${musicChart}/music.ogg`, `${assets}/${info.chart}/Chart_${info.level}.json`];
 // const res = [`../plugins/bundle/ラグトレイン.稲葉曇.0/Music.ogg`, `../plugins/bundle/ラグトレイン.稲葉曇.0/Chart_HD_repaired.json`];
 // const res = ['../assets/PastelLines.RekuMochizuki.0/music.ogg', '../plugins/bundle/riztime_test/Chart_EZ.json'];
 const linePoints = [];
@@ -316,10 +341,11 @@ async function main() {
             j.holdEndSeconds = getSeconds(j.holdEndTime);
           } else console.error('[=2] is empty:', j);
         } else {
-          if (oi.length) {
+          if (oi && oi.length) {
             const valid = oi.length === 3 && oi[0] === 0 && oi[1] === 0 && oi[2] === 0;
-            if (!valid) console.error('[!2] must be [] or [0,0,0], but got', j);
+            if (!valid) console.error('[!2] must be [] or [0,0,0], but got', oi, j);
           } else {
+            // if (!oi) console.error('[!2] is null:', j); // HeadBONKache部分note没有该字段
             // legal
           }
         }
@@ -362,7 +388,16 @@ async function main() {
       if (chart.challengeTimes.every(i => nowSeconds < i.transStartSeconds || nowSeconds > i.endSeconds)) {
         drawqwq(ctx, nowSeconds, scale, chart.themes[0].bgColor, chart.themes[0].bgColor0, chart.themes[0].bgColor1, chart.themes[0].noteColor);
       }
+      // 找到当前最后一个大于ts小于e的challengeTime，使用其themeIndex
+      const lastThemeIndex = chart.challengeTimes.reduce((acc, i) => {
+        if (nowSeconds > i.transStartSeconds && nowSeconds <= i.endSeconds) {
+          return i.themeIndex;
+        }
+        return acc;
+      }, 0);
       for (const i of chart.challengeTimes) {
+        // 小于lastThemeIndex的themeIndex的直接跳过
+        if (i.themeIndex < lastThemeIndex) continue;
         const theme = chart.themes[i.themeIndex];
         if (nowSeconds > i.endSeconds && nowSeconds <= i.transEndSeconds) {
           const transProgress = 1 - (nowSeconds - i.endSeconds) / (i.transEndSeconds - i.endSeconds);
@@ -431,8 +466,8 @@ async function main() {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       // Copyright
-      ctx.strokeText('Rizline Simulator v0.1.9', centerX, centerY - hlen * 0.03);
-      ctx.fillText('Rizline Simulator v0.1.9', centerX, centerY - hlen * 0.03);
+      ctx.strokeText('Rizline Simulator v0.1.10', centerX, centerY - hlen * 0.03);
+      ctx.fillText('Rizline Simulator v0.1.10', centerX, centerY - hlen * 0.03);
       ctx.strokeText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.fillText('DO NOT DISTRIBUTE!', centerX, centerY - hlen * 0.06);
       ctx.strokeText('Code by lchz\x683\x3473', centerX, centerY);
